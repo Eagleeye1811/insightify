@@ -1,47 +1,207 @@
 // client/src/pages/Login.jsx
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/authcontext'; 
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { LayoutDashboard, Zap, Shield } from 'lucide-react';
 
-export default function Login() {
+const Login = () => {
+  const { loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
-  const { loginWithGoogle, user } = useAuth(); // <--- 2. Get the login tool
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // 3. If the user is successfully logged in, send them to the Profile (or Dashboard)
   useEffect(() => {
     if (user) {
-      navigate('/dashboard'); // Changed to dashboard to match your flow
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
   const handleLogin = async () => {
     try {
-      // 4. The Real Login Trigger
-      await loginWithGoogle(); 
-      // The useEffect above will handle the redirect automatically
-    } catch (error) {
-      console.error("Login Error:", error);
-      alert("Login failed. Check console for details.");
+      setIsLoading(true);
+      setError(null);
+
+      const result = await loginWithGoogle();
+      const currentUser = result.user;
+
+      const userRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: currentUser.uid,
+          name: currentUser.displayName,
+          email: currentUser.email,
+          photoURL: currentUser.photoURL,
+          role: "Analyst",
+          organization: "Insightify Corp",
+          createdAt: new Date(),
+        });
+      }
+      
+    } catch (err) {
+      console.error("Login failed", err);
+      setError('Failed to sign in. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-      <div className="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-700">
-        <h2 className="text-3xl font-bold mb-6 text-center">Welcome Back</h2>
-        
-        <button
-          onClick={handleLogin} // <--- 5. Connect the button to the real function
-          className="w-full bg-white text-gray-900 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
-        >
-          <img 
-            src="https://www.google.com/favicon.ico" 
-            alt="Google" 
-            className="w-5 h-5" 
-          />
-          Sign in with Google
-        </button>
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white overflow-hidden font-sans flex items-center justify-center relative">
+      
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 right-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
+
+      {/* Grid Background */}
+      <div className="absolute inset-0 login-grid-background pointer-events-none opacity-100"></div>
+
+      {/* Main Glassmorphism Container */}
+      <div className="relative z-10 w-11/12 max-w-6xl h-auto min-h-96">
+        <div className="glass-container rounded-3xl backdrop-blur-xl border border-white/10 bg-white/5 shadow-2xl flex overflow-hidden">
+          
+          {/* Left Side - Marketing Content */}
+          <div className="hidden lg:flex flex-col justify-center w-1/2 px-12 py-16 bg-gradient-to-br from-white/5 to-transparent border-r border-white/10">
+            
+            {/* Logo */}
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30 backdrop-blur-sm">
+                  <LayoutDashboard className="w-6 h-6 text-blue-300" />
+                </div>
+                <span className="text-3xl font-bold bg-gradient-to-r from-blue-300 via-blue-400 to-cyan-300 bg-clip-text text-transparent">Insightify</span>
+              </div>
+              <p className="text-slate-400 text-sm">Your predictive intelligence platform</p>
+            </div>
+
+            {/* Marketing Copy */}
+            <div className="mb-12 space-y-4">
+              <h2 className="text-4xl font-bold text-white leading-tight">
+                Turn user behavior into
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 mt-2">
+                  predictive growth.
+                </span>
+              </h2>
+              <p className="text-slate-300 text-base leading-relaxed">
+                The only platform that combines real-time analytics with AI-driven retention strategies. Unlock insights that drive growth.
+              </p>
+            </div>
+
+            {/* Feature Pills */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-blue-400/20 hover:border-blue-400/40 hover:bg-white/10 transition-all duration-300 cursor-default group">
+                <div className="p-2 rounded-lg bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                  <Zap className="w-5 h-5 text-blue-300" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white text-sm">Predictive Analytics</p>
+                  <p className="text-xs text-slate-400">AI-powered insights in real-time</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-cyan-400/20 hover:border-cyan-400/40 hover:bg-white/10 transition-all duration-300 cursor-default group">
+                <div className="p-2 rounded-lg bg-cyan-500/20 group-hover:bg-cyan-500/30 transition-colors">
+                  <Shield className="w-5 h-5 text-cyan-300" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white text-sm">Enterprise Security</p>
+                  <p className="text-xs text-slate-400">Bank-level encryption & compliance</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side - Login Form */}
+          <div className="w-full lg:w-1/2 px-8 lg:px-12 py-12 lg:py-16 flex flex-col justify-center">
+            
+            {/* Mobile Logo */}
+            <div className="lg:hidden mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30">
+                  <LayoutDashboard className="w-5 h-5 text-blue-300" />
+                </div>
+                <span className="text-2xl font-bold text-white">Insightify</span>
+              </div>
+            </div>
+
+            {/* Header */}
+            <div className="mb-8">
+              <h3 className="text-3xl lg:text-4xl font-bold text-white mb-2">Welcome back</h3>
+              <p className="text-slate-400 text-sm">Sign in to your account and continue exploring</p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-lg text-red-300 text-sm backdrop-blur-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Google Login Button */}
+            <button
+              onClick={handleLogin}
+              disabled={isLoading}
+              className="w-full mb-6 flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-900 font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"></div>
+                  <span>Signing in...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                  <span>Continue with Google</span>
+                </div>
+              )}
+            </button>
+
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-slate-400">Or continue with email</span>
+              </div>
+            </div>
+
+            {/* Email Input (Optional - for future expansion) */}
+            <input
+              type="email"
+              placeholder="your@email.com"
+              className="w-full mb-4 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 transition-all duration-300 backdrop-blur-sm"
+            />
+
+            {/* Terms */}
+            <p className="text-center text-xs text-slate-400 mt-8">
+              By continuing, you agree to our{" "}
+              <a href="#" className="text-blue-300 hover:text-blue-200 transition-colors underline">Terms</a>
+              {" "}and{" "}
+              <a href="#" className="text-blue-300 hover:text-blue-200 transition-colors underline">Privacy Policy</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="absolute bottom-6 left-0 right-0 text-center">
+        <p className="text-xs text-slate-500">© 2026 Insightify Corp. All rights reserved.</p>
       </div>
     </div>
   );
-}
+};
+
+export default Login;

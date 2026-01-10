@@ -1,5 +1,5 @@
 // client/src/App.jsx
-import { AuthProvider } from "./context/authcontext";
+import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 

@@ -1,5 +1,5 @@
 // client/src/pages/Profile.jsx
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
