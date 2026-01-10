@@ -1,46 +1,47 @@
+/* client/src/index.css */
 @import "tailwindcss";
 
-/* client/src/index.css */
+
 :root {
   /* =========================================
-     Color Palette (Deep Midnight & Neon)
+     Color Palette (Professional Dark Mode)
      ========================================= */
 
-  /* Brand Colors */
-  --color-primary: #8B5CF6;
-  /* Violets Are Blue */
-  --color-primary-hover: #7C3AED;
-  /* Electric Violet */
-  --color-secondary: #3B82F6;
-  /* Blue (Gradient Partner) */
+  /* Brand Colors - Monochrome */
+  --color-primary: #ffffff;
+  /* Pure White */
+  --color-primary-hover: #e5e5e5;
+  /* Near White */
+  --color-secondary: #cccccc;
+  /* Light Gray */
 
   /* Backgrounds */
-  --color-bg-main: #0F172A;
-  /* Rich Black / Deep Blue */
-  --color-bg-card: #1E293B;
-  /* Charcoal / Lighter Blue */
-  --color-bg-glass: rgba(30, 41, 59, 0.70);
+  --color-bg-main: #000000;
+  /* Pure Black */
+  --color-bg-card: #0a0a0a;
+  /* Near Black */
+  --color-bg-glass: rgba(10, 10, 10, 0.95);
   /* Glass effect base */
 
   /* Text */
-  --color-text-main: #F8FAFC;
-  /* White/Off-white */
-  --color-text-muted: #94A3B8;
-  /* Slate Gray */
-  --color-text-accent: #A78BFA;
-  /* Light Purple */
+  --color-text-main: #ffffff;
+  /* Pure White */
+  --color-text-muted: #999999;
+  /* Medium Gray */
+  --color-text-accent: #e5e5e5;
+  /* Near White */
 
-  /* Semantic / Data Viz */
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --color-info: #3B82F6;
+  /* Semantic / Data Viz - Grayscale */
+  --color-success: #d2d2d2;
+  --color-warning: #b2b2b2;
+  --color-error: #e5e5e5;
+  --color-info: #bfbfbf;
 
   /* =========================================
      Typography (Outfit / Inter)
      ========================================= */
-  --font-family-base: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --font-family-heading: 'Outfit', sans-serif;
+  --font-family-base: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-family-heading: "Outfit", sans-serif;
 
   /* =========================================
      Spacing & Layout
@@ -63,7 +64,8 @@
   --radius-lg: 1rem;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.3);
 
   --glass-border: 1px solid rgba(255, 255, 255, 0.08);
   /* More subtle */
@@ -90,12 +92,16 @@ body {
   /* Critical: kill horizontal scroll at root */
   font-family: var(--font-family-base);
   background-color: var(--color-bg-main);
-  background-image:
-    /* subtle radial accents */
-    radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.06), transparent 26%),
-    radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.06), transparent 26%),
-    /* cinematic gradient (deep navy -> indigo -> violet) */
-    linear-gradient(180deg, #020617 0%, #0b1226 20%, #0f172a 40%, #1e293b 60%, #3b2b6f 80%, #5b21b6 100%);
+  background-image: radial-gradient(
+      circle at 15% 50%,
+      rgba(255, 255, 255, 0.03),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 85% 30%,
+      rgba(255, 255, 255, 0.03),
+      transparent 25%
+    );
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -139,13 +145,49 @@ ul {
   background: var(--color-bg-glass);
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
-  border: var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  border: 1px solid #1a1a1a;
+  box-shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.05),
+    0 1px 2px 0 rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-md);
 }
 
+/* =========================================
+   Animations
+   ========================================= */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-text-main) 0%, var(--color-text-accent) 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #bfbfbf 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -176,7 +218,6 @@ ul {
   border-right: var(--glass-border);
   background: rgba(15, 23, 42, 0.6);
   /* Semi-transparent base */
-  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -214,7 +255,11 @@ ul {
 }
 
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0.15) 0%,
+    transparent 100%
+  );
   color: var(--color-primary);
   border-left: 3px solid var(--color-primary);
 }
@@ -271,7 +316,11 @@ ul {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -310,209 +359,4 @@ ul {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
-}
-
-/* =========================================
-   Custom Login/Interactive helpers
-   ========================================= */
-.floating-glow {
-  box-shadow: 0 50px 120px rgba(91,33,182,0.25), 0 25px 60px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
-  transition: box-shadow 2s cubic-bezier(0.4, 0.0, 0.2, 1), transform 2s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-.floating-glow:hover {
-  box-shadow: 0 80px 200px rgba(91,33,182,0.50), 0 40px 120px rgba(59,130,246,0.40), inset 0 1px 0 rgba(255,255,255,0.16);
-  transform: translateY(-12px);
-}
-
-.btn-pressable {
-  transition: transform 180ms ease, box-shadow 180ms ease;
-}
-.btn-pressable:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 18px 30px rgba(2,6,23,0.45);
-}
-.btn-pressable:active {
-  transform: translateY(-1px) scale(0.995);
-  box-shadow: 0 8px 18px rgba(2,6,23,0.35);
-}
-
-@keyframes floatY {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0px); }
-}
-.float-slow { animation: floatY 6s ease-in-out infinite; }
-
-.card-accent-border {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.10);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  /* transition: border-color 2s cubic-bezier(0.4, 0.0, 0.2, 1), background 2s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 2s cubic-bezier(0.4, 0.0, 0.2, 1); */
-}
-.floating-glow:hover .card-accent-border,
-.card-accent-border:hover {
-  border-color: rgba(59,130,246,0.50);
-  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
-  box-shadow: 0 0 30px rgba(59,130,246,0.25) inset, 0 0 60px rgba(91,33,182,0.15) inset;
-  transition-duration: 1s;
-}
-
-/* Cinematic volumetric light and holographic panels layer */
-.background-volumetric {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-.volumetric-layer {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  mix-blend-mode: screen;
-  opacity: 0.35;
-  background-image:
-    radial-gradient(600px 400px at 10% 70%, rgba(99,102,241,0.12), transparent 15%),
-    radial-gradient(500px 300px at 85% 30%, rgba(91,33,182,0.10), transparent 12%),
-    linear-gradient(180deg, rgba(8,12,27,0.0), rgba(6,8,20,0.35));
-}
-
-/* Holographic data accents */
-.holo-accents {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.7;
-}
-.holo-accents .panel {
-  position: absolute;
-  width: 220px;
-  height: 120px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(120,100,255,0.12);
-  box-shadow: 0 8px 30px rgba(59,130,246,0.06), 0 2px 8px rgba(0,0,0,0.5);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  transform: translateZ(0);
-}
-.holo-accents .panel.small { width: 140px; height: 90px; }
-.holo-accents .panel.left { left: 8%; top: 60%; transform: translateY(-20%) rotate(-6deg); }
-.holo-accents .panel.right { right: 8%; top: 40%; transform: translateY(-10%) rotate(8deg); }
-.holo-accents .panel.center { left: 50%; top: 35%; transform: translate(-50%, -50%); width: 300px; height: 140px; }
-
-/* subtle backdrop blur behind card container specifically */
-.page-login-card-backdrop {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.page-login-card-backdrop .card-blur {
-  width: 100%;
-  max-width: 720px;
-  height: auto;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  pointer-events: none;
-}
-
-/* soft radial glow behind the card */
-.card-background-glow {
-  position: absolute;
-  left: 50%;
-  top: 30%;
-  transform: translate(-50%, -10%);
-  width: 760px;
-  height: 420px;
-  border-radius: 30px;
-  pointer-events: none;
-  background: radial-gradient(closest-side, rgba(91,33,182,0.35), rgba(59,130,246,0.20) 35%, rgba(99,102,241,0.08) 60%, transparent 80%);
-  filter: blur(40px) saturate(140%);
-  z-index: 5;
-  animation: pulseGlow 4s ease-in-out infinite;
-  
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 1;
-    filter: blur(40px) saturate(140%);
-  }
-  50% {
-    opacity: 0.85;
-    filter: blur(45px) saturate(150%);
-  }
-}
-
-/* left-side illustration (place file at /public/assets/left-illustration.png) */
-.illustration-left {
-  position: absolute;
-  left: -90%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 800px;
-  max-width: 70%;
-  opacity: 0.95;
-  z-index: 6;
-  transition: transform 300ms ease, opacity 300ms ease;
-}
-.illustration-left:hover { transform: translateY(-52%) scale(1.02); opacity: 1; }
-
-/* =========================================
-   Glassmorphism Login Page Styles
-   ========================================= */
-
-.login-grid-background {
-  background-image: 
-    linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent),
-    linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent);
-  background-size: 40px 40px;
-}
-.glass-container {
-  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 
-    0 8px 32px 0 rgba(31, 38, 135, 0.37),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
-    0 0 100px rgba(59, 130, 246, 0.1);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-container:hover {
-  box-shadow: 
-    0 8px 48px 0 rgba(31, 38, 135, 0.5),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
-    0 0 150px rgba(59, 130, 246, 0.2);
-  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%);
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .glass-container {
-    flex-direction: column;
-  }
-  
-  .glass-container > div {
-    width: 100% !important;
-    border-right: none !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .glass-container > div:last-child {
-    border-bottom: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .card-background-glow { display: none; }
-  .illustration-left { display: none; }
-  
-  .glass-container {
-    max-width: 95%;
-    margin: 0 auto;
-  }
 }
