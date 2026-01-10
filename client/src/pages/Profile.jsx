@@ -16,16 +16,19 @@ import {
   Lock,
   Clock,
   Pencil,
-  History,      // Added for History Icon
-  FolderOpen,   // Added for Past Reports button
-  File          // Added for file icon
+  History,
+  FolderOpen,
+  File,
+  TrendingUp,   // Added
+  AlertCircle,  // Added
+  Target        // Added
 } from "lucide-react";
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
-  const [showReports, setShowReports] = useState(false); // State for Report History Modal
+  const [showReports, setShowReports] = useState(false);
 
   // Mock data for past reports
   const pastReports = [
@@ -109,7 +112,72 @@ const Profile = () => {
       </div>
 
       {/* --- MAIN CONTENT AREA --- */}
-      <div className="max-w-7xl mx-auto p-6 lg:p-10">
+      <div className="max-w-7xl mx-auto p-6 lg:p-10 space-y-8">
+        
+        {/* NEW: IMPACT STATS ROW */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Stat 1 */}
+            <div className="bg-[#1e293b] p-5 rounded-xl border border-slate-700/50 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <TrendingUp size={60} />
+                </div>
+                <div className="flex items-center gap-3 text-blue-400 mb-2">
+                    <div className="p-2 bg-blue-500/10 rounded-lg"><TrendingUp size={18} /></div>
+                    <span className="text-sm font-medium text-slate-300">Total Scans</span>
+                </div>
+                <div>
+                    <span className="text-3xl font-bold text-white">42</span>
+                    <p className="text-xs text-slate-500 mt-1">Lifetime reports generated</p>
+                </div>
+            </div>
+
+            {/* Stat 2 */}
+            <div className="bg-[#1e293b] p-5 rounded-xl border border-slate-700/50 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <AlertCircle size={60} />
+                </div>
+                <div className="flex items-center gap-3 text-orange-400 mb-2">
+                     <div className="p-2 bg-orange-500/10 rounded-lg"><AlertCircle size={18} /></div>
+                    <span className="text-sm font-medium text-slate-300">Issues Detect</span>
+                </div>
+                <div>
+                    <span className="text-3xl font-bold text-white">128</span>
+                    <p className="text-xs text-slate-500 mt-1">Potential bugs found</p>
+                </div>
+            </div>
+
+            {/* Stat 3 */}
+            <div className="bg-[#1e293b] p-5 rounded-xl border border-slate-700/50 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Clock size={60} />
+                </div>
+                <div className="flex items-center gap-3 text-green-400 mb-2">
+                     <div className="p-2 bg-green-500/10 rounded-lg"><Clock size={18} /></div>
+                    <span className="text-sm font-medium text-slate-300">Time Saved</span>
+                </div>
+                <div>
+                    <span className="text-3xl font-bold text-white">~14h</span>
+                    <p className="text-xs text-slate-500 mt-1">Compared to manual</p>
+                </div>
+            </div>
+
+            {/* Stat 4 */}
+            <div className="bg-[#1e293b] p-5 rounded-xl border border-slate-700/50 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Target size={60} />
+                </div>
+                <div className="flex items-center gap-3 text-purple-400 mb-2">
+                     <div className="p-2 bg-purple-500/10 rounded-lg"><Target size={18} /></div>
+                    <span className="text-sm font-medium text-slate-300">Top Focus</span>
+                </div>
+                <div>
+                    <span className="text-xl font-bold text-white truncate">Mobile Apps</span>
+                    <p className="text-xs text-slate-500 mt-1">Most frequent category</p>
+                </div>
+            </div>
+        </div>
+
+        {/* EXISTING GRID LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Card 1: Quick Actions */}
@@ -119,14 +187,10 @@ const Profile = () => {
             </h3>
             
             <div className="flex-1 flex flex-col justify-center gap-4">
-              
-              {/* 1. Generate Report Button (Primary) */}
               <button className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 px-4 rounded-lg font-medium transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5 border border-blue-500 text-sm">
                   <FileText size={18} /> 
                   <span>Generate New Report</span>
               </button>
-
-              {/* 2. View Past Reports Option (Secondary) */}
               <button 
                 onClick={() => setShowReports(true)}
                 className="w-full bg-[#0f172a] hover:bg-slate-800 text-slate-300 hover:text-white py-3.5 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border border-slate-700 hover:border-slate-600 text-sm group"
@@ -134,7 +198,6 @@ const Profile = () => {
                   <FolderOpen size={18} className="text-slate-500 group-hover:text-blue-400 transition-colors"/> 
                   <span>View Past Reports</span>
               </button>
-
             </div>
           </div>
 
@@ -190,7 +253,6 @@ const Profile = () => {
                 onClick={() => setShowReports(false)}
             ></div>
             <div className="relative bg-[#1e293b] border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh]">
-                {/* Header */}
                 <div className="p-6 border-b border-slate-700/50 flex justify-between items-center">
                     <div>
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
@@ -202,7 +264,6 @@ const Profile = () => {
                         <X size={20} />
                     </button>
                 </div>
-                {/* List */}
                 <div className="p-0 overflow-y-auto custom-scrollbar flex-1">
                     <div className="divide-y divide-slate-700/50">
                         {pastReports.map((report) => (
@@ -223,7 +284,6 @@ const Profile = () => {
                         ))}
                     </div>
                 </div>
-                {/* Footer */}
                 <div className="p-4 border-t border-slate-700/50 bg-slate-800/30 rounded-b-2xl text-center">
                     <button onClick={() => setShowReports(false)} className="text-sm text-slate-400 hover:text-white transition-colors">Close</button>
                 </div>
