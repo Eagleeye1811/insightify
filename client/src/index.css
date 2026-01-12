@@ -15,20 +15,20 @@
   /* Blue (Gradient Partner) */
 
   /* Backgrounds */
-  --color-bg-main: #0F172A;
-  /* Rich Black / Deep Blue */
-  --color-bg-card: #1E293B;
-  /* Charcoal / Lighter Blue */
-  --color-bg-glass: rgba(30, 41, 59, 0.70);
+  --color-bg-main: #0a0a0a;
+  /* Almost Black */
+  --color-bg-card: #171717;
+  /* Dark Gray */
+  --color-bg-glass: rgba(23, 23, 23, 0.70);
   /* Glass effect base */
 
   /* Text */
-  --color-text-main: #F8FAFC;
-  /* White/Off-white */
-  --color-text-muted: #94A3B8;
-  /* Slate Gray */
-  --color-text-accent: #A78BFA;
-  /* Light Purple */
+  --color-text-main: #ffffff;
+  /* Pure White */
+  --color-text-muted: #a1a1a1;
+  /* Neutral Gray */
+  --color-text-accent: #ffffff;
+  /* White */
 
   /* Semantic / Data Viz */
   --color-success: #10B981;
@@ -69,6 +69,18 @@
   /* More subtle */
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --backdrop-blur: blur(16px);
+
+  /* Shadcn-style CSS Variables (HSL format for hsl() wrapper) */
+  --background: 0 0% 4%; /* #0a0a0a */
+  --foreground: 0 0% 100%; /* #ffffff */
+  --card: 0 0% 9%; /* #171717 */
+  --card-foreground: 0 0% 100%;
+  --primary: 258 90% 66%; /* #8B5CF6 */
+  --primary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%; /* #262626 */
+  --muted-foreground: 0 0% 63%; /* #a1a1a1 */
+  --border: 0 0% 15%; /* #262626 */
+  --ring: 258 90% 66%; /* Primary color for focus rings */
 }
 
 /* =========================================
@@ -89,15 +101,11 @@ body {
   overflow-x: hidden;
   /* Critical: kill horizontal scroll at root */
   font-family: var(--font-family-base);
-  background-color: var(--color-bg-main);
-  background-image:
-    /* subtle radial accents */
-    radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.06), transparent 26%),
-    radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.06), transparent 26%),
-    /* cinematic gradient (deep navy -> indigo -> violet) */
-    linear-gradient(180deg, #020617 0%, #0b1226 20%, #0f172a 40%, #1e293b 60%, #3b2b6f 80%, #5b21b6 100%);
-  color: var(--color-text-main);
+  background-color: #0a0a0a;
+  background-image: none;
+  color: #ffffff;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
   min-height: 100vh;

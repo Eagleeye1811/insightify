@@ -1,101 +1,164 @@
 import React from 'react';
-import { BarChart2, Zap, MessageSquare } from 'lucide-react';
-import LandingCarousel from '../components/LandingCarousel';
+import { motion } from 'framer-motion';
 import AppInput from '../components/AppInput';
-import FeatureCard from '../components/FeatureCard';
+import { TestimonialsSection } from '../components/ui/testimonials-with-marquee';
+import ValueFlowSection from '../components/ui/ValueFlowSection';
+import DashboardShowcase from '../components/ui/DashboardShowcase';
+import StepsSection from '../components/ui/StepsSection';
 import './Landing.css';
 
 export default function Landing() {
+
     return (
         <div className="landing-page">
-            {/* Navbar is now handled by Layout */}
+            {/* Particle Background */}
+            <div className="particles-background-simple">
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+                <div className="particle-dot"></div>
+            </div>
 
             {/* Hero Section */}
-            <div className="hero-section">
-                <div className="hero-glow"></div>
-
-                <div className="hero-content">
+            <section className="hero-section">
+                <div className="hero-container">
                     <div className="hero-badge">
-                        <span className="blink-dot"></span>
+                        <span className="badge-dot"></span>
                         <span>Powered by Gemini 1.5 + RAG</span>
                     </div>
 
                     <h1 className="hero-title">
-                        Transform Reviews into <br />
-                        <span className="highlight-gradient">Actionable Growth</span>
+                        Transform Reviews into<br />
+                        <span className="gradient-text">Actionable Growth</span>
                     </h1>
 
-                    <p className="hero-subtitle">
-                        Stop guessing why users uninstall. Let our AI analyze review patterns, providing you with data-driven retention strategies in seconds.
+                    <p className="hero-description">
+                        Stop guessing why users uninstall. Let our AI analyze review patterns,<br className="hide-mobile" /> providing you with data-driven retention strategies in seconds.
                     </p>
 
-                    <div className="hero-input-area">
+                    <div className="hero-actions">
                         <AppInput />
-                        <p style={{ marginTop: '1rem', color: '#64748b', fontSize: '0.875rem' }}>Try "Spotify", "Duolingo", or paste a link</p>
+                    </div>
+
+                    <p className="hero-hint">Try "Spotify", "Duolingo", or paste a link</p>
+
+                    {/* Scrolling Badges */}
+                    <div className="scrolling-badges">
+                        <div className="badge-track">
+                            <span className="platform-badge">Google Play</span>
+                            <span className="platform-badge">Apple App Store</span>
+                            <span className="platform-badge">Google Play</span>
+                            <span className="platform-badge">Apple App Store</span>
+                            <span className="platform-badge">Google Play</span>
+                            <span className="platform-badge">Apple App Store</span>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                {/* 3D Carousel (This component handles its own internal layout, but container needs margin) */}
-                <div style={{ marginBottom: '8rem' }}>
-                    <LandingCarousel />
-                </div>
-            </div>
+            {/* Steps Section */}
+            <StepsSection />
 
-            {/* Dashboard Preview Section */}
-            <div className="dashboard-preview">
-                <div className="preview-container">
-                    <img
-                        src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2940&auto=format&fit=crop"
-                        alt="Dashboard Preview"
-                        className="preview-image"
-                    />
-                </div>
-            </div>
+            {/* Value Flow Section */}
+            <ValueFlowSection />
 
-            {/* Features Grid */}
-            <div className="features-section">
-                <h2 className="section-title">Intelligence at every layer</h2>
+            {/* Dashboard Showcase */}
+            <DashboardShowcase />
 
-                <div className="features-grid">
-                    <FeatureCard
-                        icon={BarChart2}
-                        title="Review Analysis"
-                        description="Identify sediment shifts and topic clusters automatically from user feedback."
-                        color="#60a5fa"
-                    />
-                    <FeatureCard
-                        icon={Zap}
-                        title="Feature Mining"
-                        description="Discover requested features hidden deep within thousands of reviews."
-                        color="#facc15"
-                    />
-                    <FeatureCard
-                        icon={MessageSquare}
-                        title="Voice AI Mentor"
-                        description="Chat with your data. Ask strategic questions and get instant, sourced answers."
-                        color="#c084fc"
-                    />
-                    <FeatureCard
-                        icon={BarChart2}
-                        title="Competitor Intel"
-                        description="Compare your performance metrics directly against your top competitors."
-                        color="#4ade80"
-                    />
-                </div>
-            </div>
-
-            {/* Social Proof / Trust */}
-            <div className="social-proof-section">
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#e2e8f0' }}>Trusted by developers building next-gen apps</h2>
-                <div className="company-logos">
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>ACME Corp</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>Stark Industries</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>Wayne Tech</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>Cyberdyne</div>
-                </div>
-            </div>
-
-            {/* Footer is now handled by Layout */}
+            {/* Testimonials Section */}
+            <TestimonialsSection
+                title="What Our Users Say"
+                description="Join thousands of developers and product managers who are already making smarter decisions with Insightify"
+                testimonials={[
+                    {
+                        author: {
+                            name: "Sarah Chen",
+                            handle: "@sarahchen",
+                            avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "Insightify transformed how we analyze user feedback. We identified key pain points that led to a 40% increase in user retention.",
+                        href: "https://twitter.com/sarahchen"
+                    },
+                    {
+                        author: {
+                            name: "Marcus Rodriguez",
+                            handle: "@mrodriguez",
+                            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "The AI-powered insights saved us weeks of manual review analysis. Now we can focus on building features users actually want.",
+                        href: "https://twitter.com/mrodriguez"
+                    },
+                    {
+                        author: {
+                            name: "Emily Watson",
+                            handle: "@emilywatson",
+                            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "Finally, a tool that makes sense of the chaos. Insightify's competitor analysis gave us the edge we needed to stand out."
+                    },
+                    {
+                        author: {
+                            name: "David Kim",
+                            handle: "@davidkim",
+                            avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "The voice AI mentor is incredible. It answers questions about our data faster than any analyst could. Game changer!",
+                        href: "https://twitter.com/davidkim"
+                    },
+                    {
+                        author: {
+                            name: "Lisa Martinez",
+                            handle: "@lisamartinez",
+                            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "We discovered critical bugs through sentiment analysis that we would have missed otherwise. Worth every penny.",
+                        href: "https://twitter.com/lisamartinez"
+                    },
+                    {
+                        author: {
+                            name: "James Park",
+                            handle: "@jamespark",
+                            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "Insightify's automated tag generation helped us categorize 50,000 reviews in minutes. Absolutely phenomenal.",
+                        href: "https://twitter.com/jamespark"
+                    },
+                    {
+                        author: {
+                            name: "Sophia Anderson",
+                            handle: "@sophiaanderson",
+                            avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "The real-time insights dashboard is our product team's favorite tool. We check it every morning!",
+                        href: "https://twitter.com/sophiaanderson"
+                    },
+                    {
+                        author: {
+                            name: "Alex Thompson",
+                            handle: "@alexthompson",
+                            avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face"
+                        },
+                        text: "Best investment we made this year. The ROI was clear within the first month of using Insightify.",
+                        href: "https://twitter.com/alexthompson"
+                    }
+                ]}
+            />
         </div>
     );
 }
