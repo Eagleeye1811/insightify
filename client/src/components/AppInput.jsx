@@ -39,9 +39,9 @@ const AppInput = () => {
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
-            background: 'rgba(255, 255, 255, 0.05)',
+            background: '#ffffff',
             backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             borderRadius: '999px',
             padding: '0.5rem',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
@@ -50,13 +50,13 @@ const AppInput = () => {
             flex: 1,
             background: 'transparent',
             border: 'none',
-            color: 'white',
+            color: '#000000',
             padding: '0.75rem 1rem',
             fontSize: '1.125rem',
             outline: 'none'
         },
         button: {
-            background: 'linear-gradient(90deg, #2563eb, #9333ea)',
+            background: '#000000',
             color: 'white',
             padding: '0.75rem 2rem',
             borderRadius: '999px',
@@ -74,7 +74,7 @@ const AppInput = () => {
         <form onSubmit={handleAnalyze} style={styles.form}>
             <div style={styles.glow}></div>
             <div style={styles.container}>
-                <Search color="#9ca3af" size={24} style={{ marginLeft: '1rem' }} />
+                <Search color="#000000" size={24} style={{ marginLeft: '1rem' }} />
                 <input
                     type="text"
                     placeholder="Paste Play Store Link or App Name..."

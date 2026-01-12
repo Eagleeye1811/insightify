@@ -15,6 +15,11 @@
   /* Light Gray */
 
   /* Backgrounds */
+  --color-bg-main: #0a0a0a;
+  /* Almost Black */
+  --color-bg-card: #171717;
+  /* Dark Gray */
+  --color-bg-glass: rgba(23, 23, 23, 0.70);
   --color-bg-main: #000000;
   /* Pure Black */
   --color-bg-card: #0a0a0a;
@@ -25,6 +30,10 @@
   /* Text */
   --color-text-main: #ffffff;
   /* Pure White */
+  --color-text-muted: #a1a1a1;
+  /* Neutral Gray */
+  --color-text-accent: #ffffff;
+  /* White */
   --color-text-muted: #999999;
   /* Medium Gray */
   --color-text-accent: #e5e5e5;
@@ -70,6 +79,18 @@
   /* More subtle */
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --backdrop-blur: blur(16px);
+
+  /* Shadcn-style CSS Variables (HSL format for hsl() wrapper) */
+  --background: 0 0% 4%; /* #0a0a0a */
+  --foreground: 0 0% 100%; /* #ffffff */
+  --card: 0 0% 9%; /* #171717 */
+  --card-foreground: 0 0% 100%;
+  --primary: 258 90% 66%; /* #8B5CF6 */
+  --primary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%; /* #262626 */
+  --muted-foreground: 0 0% 63%; /* #a1a1a1 */
+  --border: 0 0% 15%; /* #262626 */
+  --ring: 258 90% 66%; /* Primary color for focus rings */
 }
 
 /* =========================================
@@ -90,6 +111,9 @@ body {
   overflow-x: hidden;
   /* Critical: kill horizontal scroll at root */
   font-family: var(--font-family-base);
+  background-color: #0a0a0a;
+  background-image: none;
+  color: #ffffff;
   background-color: var(--color-bg-main);
   background-image: radial-gradient(
       circle at 15% 50%,
@@ -103,6 +127,7 @@ body {
     );
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
   min-height: 100vh;
