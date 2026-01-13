@@ -20,6 +20,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import VoiceAgent from "./pages/VoiceAgent";
 import Profile from "./pages/Profile";
+import BillingPage from "./pages/Biling";
 import Chatbot from "./pages/Chatbot";
 import AnalyzeApp from "./pages/AnalyzeApp";
 
@@ -84,19 +85,22 @@ function App() {
               }
             />
 
-            <Route
-              path="/chat"
-              element={
-                <Layout>
-                  <Chatbot />
-                </Layout>
-              }
-            />
+          <Route path="/billing" element={
+            <Layout>
+              <BillingPage />
+            </Layout>
+          } />
 
-            {/* Catch-all route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
+          <Route path="/chat" element={
+            <Layout>
+              <Chatbot />
+            </Layout>
+          } />
+
+          {/* Catch-all route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
       </OnboardingProvider>
     </AuthProvider>
   );
