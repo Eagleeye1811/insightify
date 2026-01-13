@@ -1,8 +1,8 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import '../pages/Landing.css'; // Reuse existing styles
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Sparkles } from "lucide-react";
+import { useAuth } from "../context/authcontext";
+import "../pages/Landing.css"; // Reuse existing styles
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -10,14 +10,17 @@ const Navbar = () => {
     const { currentUser } = useAuth();
 
     // Check if we are on the landing page (to optionally change style)
-    const isLanding = location.pathname === '/';
+    const isLanding = location.pathname === "/";
 
     return (
         <nav className="fixed top-6 left-0 right-0 z-100 px-6">
             <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between bg-black/80 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 shadow-2xl">
                     {/* Logo */}
-                    <div className="nav-brand cursor-pointer" onClick={() => navigate('/')}>
+                    <div
+                        className="nav-brand cursor-pointer"
+                        onClick={() => navigate("/")}
+                    >
                         <div className="brand-icon">
                             <Sparkles size={18} color="white" />
                         </div>
