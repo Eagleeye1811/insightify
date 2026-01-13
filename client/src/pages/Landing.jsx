@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import AppInput from "../components/AppInput";
 import { TestimonialsSection } from "../components/ui/testimonials-with-marquee";
 import ValueFlowSection from "../components/ui/ValueFlowSection";
 import DashboardShowcase from "../components/ui/DashboardShowcase";
 import StepsSection from "../components/ui/StepsSection";
+import { useAuth } from "../context/AuthContext";
 import {
   ChevronDown,
   Brain,
@@ -18,6 +20,8 @@ import "./Landing.css";
 
 export default function Landing() {
   const [openFaq, setOpenFaq] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const faqs = [
     {
@@ -107,10 +111,10 @@ export default function Landing() {
                     </div> */}
 
           <h1 className="hero-title pt-25">
-            Transform <span style={{ color: "#a855f7" }}>Reviews</span> into
-            <br />
-            <span className="gradient-text">Actionable</span>{" "}
-            <span style={{ color: "#a855f7" }}>Growth</span>
+            <span className="bg-gradient-to-r from-white via-violet-700 to-white bg-clip-text text-transparent">
+              Transform Reviews into <br />
+              Actionable Growth
+            </span>
           </h1>
 
           <p className="hero-description">
@@ -121,7 +125,10 @@ export default function Landing() {
           </p>
 
           <div className="hero-actions">
-            <button className="get-started-btn">
+            <button
+              className="get-started-btn"
+              onClick={() => navigate(user ? "/analyze" : "/login")}
+            >
               Get Started
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -461,7 +468,7 @@ export default function Landing() {
               <div
                 key={index}
                 style={{
-                  borderBottom: "5px solid rgba(255, 255, 255, 0.5)",
+                  borderBottom: "2px solid rgba(255, 255, 255, 0.5)",
                   padding: "1.5rem 0",
                 }}
               >

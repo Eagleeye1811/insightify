@@ -27,13 +27,49 @@ const Navbar = () => {
                         Insightify
                     </div>
 
-                    {/* Central Navigation Menu */}
-                    <div className="nav-menu-center hidden md:flex items-center gap-8 bg-white/5 border border-white/10 rounded-full px-8 py-2">
-                        <button onClick={() => navigate('/dashboard')} className={`nav-link-pill ${location.pathname === '/dashboard' ? 'text-white' : 'text-white/70'}`}>Dashboard</button>
-                        <button onClick={() => navigate('/analyze')} className={`nav-link-pill ${location.pathname === '/analyze' ? 'text-white' : 'text-white/70'}`}>Analyze</button>
-                        <button onClick={() => navigate('/voice-agent')} className={`nav-link-pill ${location.pathname === '/voice-agent' ? 'text-white' : 'text-white/70'}`}>Voice Agent</button>
-                        <button onClick={() => navigate('/profile')} className={`nav-link-pill ${location.pathname === '/profile' ? 'text-white' : 'text-white/70'}`}>Profile</button>
-                    </div>
+          {/* Central Navigation Menu */}
+          <div className="nav-menu-center hidden md:flex items-center gap-8 bg-white/5 border border-white/10 rounded-full px-8 py-2">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className={`nav-link-pill ${
+                location.pathname === "/dashboard"
+                  ? "text-white"
+                  : "text-white/70"
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => navigate("/analyze")}
+              className={`nav-link-pill ${
+                location.pathname === "/analyze"
+                  ? "text-white"
+                  : "text-white/70"
+              }`}
+            >
+              Analyze
+            </button>
+            <button
+              onClick={() => navigate("/voice-agent")}
+              className={`nav-link-pill ${
+                location.pathname === "/voice-agent"
+                  ? "text-white"
+                  : "text-white/70"
+              }`}
+            >
+              Voice Agent
+            </button>
+            <button
+              onClick={() => navigate("/profile")}
+              className={`nav-link-pill ${
+                location.pathname === "/profile"
+                  ? "text-white"
+                  : "text-white/70"
+              }`}
+            >
+              Profile
+            </button>
+          </div>
 
                     {/* Right Side Actions */}
                     <div className="nav-actions">
