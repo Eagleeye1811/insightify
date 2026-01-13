@@ -40,6 +40,16 @@ const Navbar = () => {
               Dashboard
             </button>
             <button
+              onClick={() => navigate("/analyze")}
+              className={`nav-link-pill ${
+                location.pathname === "/analyze"
+                  ? "text-white"
+                  : "text-white/70"
+              }`}
+            >
+              Analyze
+            </button>
+            <button
               onClick={() => navigate("/voice-agent")}
               className={`nav-link-pill ${
                 location.pathname === "/voice-agent"
