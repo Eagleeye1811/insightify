@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-// const controller = require('../controllers/appsController'); 
+const appController = require('../controllers/appController');
+const { authenticateUser } = require('../middleware/authMiddleware');
 
-router.get('/', (req, res) => {
-    res.json({ message: 'apps route working' });
-});
+router.get('/', authenticateUser, appController.listApps);
 
 module.exports = router;

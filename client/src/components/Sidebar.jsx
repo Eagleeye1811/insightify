@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Mic, User, Settings, PieChart } from 'lucide-react';
+import { LayoutDashboard, Mic, User, Settings, PieChart, Bot } from 'lucide-react';
 
 const Sidebar = () => {
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { icon: PieChart, label: 'Analytics', path: '/analytics' }, // Placeholder path
         { icon: Mic, label: 'Voice Agent', path: '/voice-agent' },
+        { icon: Bot, label: 'Chat Assistant', path: '/chat' },
         { icon: User, label: 'Profile', path: '/profile' },
     ];
 

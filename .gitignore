@@ -20,3 +20,7 @@ dist/
 build/
 __pycache__/
 *.pyc
+
+# Secrets
+server/serviceAccountKey.json
+ai-service/service_account.json
