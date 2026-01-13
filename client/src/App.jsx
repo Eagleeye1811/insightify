@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import VoiceAgent from "./pages/VoiceAgent";
 import Profile from "./pages/Profile";
+import BillingPage from "./pages/Biling";
 import Chatbot from "./pages/Chatbot";
 import AnalyzeApp from "./pages/AnalyzeApp";
 
@@ -61,7 +62,11 @@ function App() {
             </Layout>
           } />
 
-
+          <Route path="/billing" element={
+            <Layout>
+              <BillingPage />
+            </Layout>
+          } />
 
           <Route path="/chat" element={
             <Layout>
