@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@splinetool/react-spline": "^4.1.0",
+    "@splinetool/runtime": "^1.12.32",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-slot": "^1.2.4",
     "axios": "^1.13.2",
@@ -21,8 +23,10 @@
     "ogl": "^1.0.11",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.12.0",
     "recharts": "^3.6.0",
+    "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

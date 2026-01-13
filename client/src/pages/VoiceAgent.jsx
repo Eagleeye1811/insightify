@@ -1,36 +1,207 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { InteractiveRobotSpline } from '../components/InteractiveRobotSpline';
+import { Mic, MicOff, MessageSquare, TrendingUp, DollarSign, Briefcase } from 'lucide-react';
+import './VoiceAgent.css';
 
-export default function VoiceAgent() {
-    const [isListening, setIsListening] = useState(false);
+const VoiceAgent = () => {
+    const [isConnected, setIsConnected] = useState(false);
+    const [statusText, setStatusText] = useState("Ready to connect");
+
+    // Refs for audio and websocket
+    const audioContextRef = React.useRef(null);
+    const wsRef = React.useRef(null);
+    const streamRef = React.useRef(null);
+    const workletNodeRef = React.useRef(null);
+    const sourceNodeRef = React.useRef(null);
+
+    // Initial audio input setup
+    const startAudio = async () => {
+        try {
+            setStatusText("Requesting microphone...");
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    sampleRate: 16000,
+                    channelCount: 1,
+                    echoCancellation: true,
+                    autoGainControl: true,
+                    noiseSuppression: true
+                }
+            });
+            streamRef.current = stream;
+
+            setStatusText("Connecting to server...");
+            // Connect WebSocket
+            const ws = new WebSocket('ws://localhost:8000/ws/agent');
+            ws.binaryType = 'arraybuffer';
+            wsRef.current = ws;
+
+            ws.onopen = async () => {
+                console.log("WebSocket connected");
+                setStatusText("Listening...");
+                setIsConnected(true);
+
+                // Initialize Audio Context
+                audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                await audioContextRef.current.audioWorklet.addModule('/audio-processor.js');
+
+                // Create Source
+                sourceNodeRef.current = audioContextRef.current.createMediaStreamSource(stream);
+
+                // Create Worklet Node
+                workletNodeRef.current = new AudioWorkletNode(audioContextRef.current, 'audio-processor');
+
+                // Handle data from audio processor (mic input)
+                workletNodeRef.current.port.onmessage = (event) => {
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(event.data);
+                    }
+                };
+
+                sourceNodeRef.current.connect(workletNodeRef.current);
+                workletNodeRef.current.connect(audioContextRef.current.destination); // Connect to dest to keep alive? Usually not needed if not playing back self.
+                // Actually, connecting to destination might cause feedback if we are not careful. 
+                // In worklet, we didn't pass input to output, so it should be fine.
+            };
+
+            ws.onmessage = async (event) => {
+                // Receive audio from server (Gemini response)
+                playAudioChunk(event.data);
+            };
+
+            ws.onclose = (event) => {
+                console.log("WebSocket disconnected", event);
+                if (event.code === 1011 || event.reason) {
+                    setStatusText(`Error: ${event.reason || "Connection closed error"}`);
+                } else {
+                    stopAudio();
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error("WebSocket error:", error);
+                setStatusText("Connection Error");
+            };
+
+        } catch (error) {
+            console.error("Error starting audio:", error);
+            setStatusText("Error Requesting Mic");
+        }
+    };
+
+    const stopAudio = () => {
+        if (wsRef.current) {
+            wsRef.current.close();
+        }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+        }
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+        }
+
+        setIsConnected(false);
+        setStatusText("Ready to connect");
+    };
+
+    const playAudioChunk = (data) => {
+        // Simple playback using decodeAudioData (might have latency)
+        // For lower latency, we should use a proper AudioWorklet or ScriptProcessor to queue PCM data.
+        // But since we receive chunks, let's try a simple buffer queue or just decode if it's WAV/MP3. 
+        // Gemini often sends PCM. If PCM, we need to create buffer manually.
+
+        // Assuming Gemini sends raw PCM 16-bit 24kHz (default usually) or 16kHz?
+        // Our client asked for 16kHz.
+        // The Gemini Live API spec says raw PCM. 
+        // Let's assume we receive raw PCM 16-bit Little Endian.
+
+        if (!audioContextRef.current) return;
+
+        const int16Array = new Int16Array(data);
+        const float32Array = new Float32Array(int16Array.length);
+
+        for (let i = 0; i < int16Array.length; i++) {
+            float32Array[i] = int16Array[i] / 32768;
+        }
+
+        const buffer = audioContextRef.current.createBuffer(1, float32Array.length, 24000); // Gemini usually 24kHz out
+        buffer.getChannelData(0).set(float32Array);
+
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContextRef.current.destination);
+        source.start();
+    };
+
+    const toggleConnection = () => {
+        if (isConnected) {
+            stopAudio();
+        } else {
+            startAudio();
+        }
+    };
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => stopAudio();
+    }, []);
 
     return (
-        <div className="h-screen bg-gray-900 text-white flex flex-col items-center justify-center relative overflow-hidden">
-            {/* Background Animation */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black animate-pulse" />
+        <div className="voice-agent-container">
+            {/* Background Layer: 3D Robot */}
+            <div className="spline-background">
+                <InteractiveRobotSpline
+                    scene="https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode"
+                    className="w-full h-full"
+                />
+            </div>
 
-            <div className="z-10 text-center max-w-2xl px-4">
-                <h2 className="text-2xl font-light mb-8 opacity-80">Insightify Voice Mentor</h2>
+            {/* Overlay Layer: UI Controls */}
+            <div className="content-overlay">
 
-                {/* Visualizer Placeholder */}
-                <div className="h-32 flex items-center justify-center gap-2 mb-12">
-                    {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className={`w-2 bg-blue-500 rounded-full transition-all duration-300 ${isListening ? 'h-16 animate-bounce' : 'h-2'}`} />
-                    ))}
+                {/* Top Badge */}
+                <div className="mentor-badge">
+                    <Briefcase size={14} />
+                    <span>Senior Play Store App Growth Mentor</span>
                 </div>
 
-                <button
-                    onClick={() => setIsListening(!isListening)}
-                    className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${isListening ? 'bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_30px_rgba(37,99,235,0.5)]'}`}
-                >
-                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                    </svg>
-                </button>
+                {/* Live Status Indicator */}
+                <div className={`live-indicator ${isConnected ? 'on-air' : ''}`}>
+                    <div className="recording-dot"></div>
+                    <span>{isConnected ? "LIVE CONNECTION" : "OFFLINE"}</span>
+                </div>
 
-                <p className="mt-8 text-lg font-mono text-blue-300">
-                    {isListening ? "Listening..." : "Tap to speak with your Growth Mentor"}
+                {/* Status Text */}
+                <h2 className="agent-status text-gradient">
+                    {statusText}
+                </h2>
+
+                {/* Audio Waveform Visualization */}
+                {isConnected && (
+                    <div className="waveform-container">
+                        <div className="bar"></div>
+                        <div className="bar"></div>
+                        <div className="bar"></div>
+                        <div className="bar"></div>
+                        <div className="bar"></div>
+                    </div>
+                )}
+
+                {/* Control Bar */}
+                <div className="control-bar">
+                    <button
+                        className={`btn-mic ${isConnected ? 'active' : ''}`}
+                        onClick={toggleConnection}
+                    >
+                        {isConnected ? <MicOff size={32} /> : <Mic size={32} />}
+                    </button>
+                </div>
+
+                <p style={{ marginTop: '0.5rem', color: '#cbd5e1', fontSize: '0.9rem', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                    {isConnected ? "Tap to disconnect" : "Tap to start conversation"}
                 </p>
             </div>
         </div>
     );
-}
+};
+
+export default VoiceAgent;
