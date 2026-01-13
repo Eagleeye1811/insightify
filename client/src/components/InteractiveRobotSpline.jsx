@@ -1,8 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, memo } from 'react';
 
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
-export function InteractiveRobotSpline({ scene, className }) {
+export const InteractiveRobotSpline = memo(({ scene, className }) => {
     return (
         <Suspense
             fallback={
@@ -15,4 +15,4 @@ export function InteractiveRobotSpline({ scene, className }) {
             />
         </Suspense>
     );
-}
+});

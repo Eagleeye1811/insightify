@@ -11,7 +11,7 @@ import OnBoarding5 from "./pages/OnBoarding/OnBoarding5";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import VoiceAgent from "./pages/VoiceAgent";
+import VoiceAgentFree from "./pages/VoiceAgentFree";
 import Profile from "./pages/Profile";
 import BillingPage from "./pages/Biling";
 import Chatbot from "./pages/Chatbot";
@@ -52,7 +52,7 @@ function App() {
 
           <Route path="/voice-agent" element={
             <Layout>
-              <VoiceAgent />
+              <VoiceAgentFree />
             </Layout>
           } />
 

@@ -9,3 +9,6 @@ chromadb
 sentence-transformers
 websockets
 firebase-admin
+
+# OpenAI Realtime API (alternative to Gemini)
+openai>=1.12.0
