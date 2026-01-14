@@ -62,12 +62,12 @@ const OnBoarding4 = () => {
     <BackgroundLines className="min-h-screen bg-black text-white font-sans flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-4xl z-10">
         {/* Progress Bar: Step 4 of 5 */}
-        <div className="mb-10 max-w-xl mx-auto">
+        <div className="mb-12 max-w-lg mx-auto">
           <div className="flex justify-between items-end text-xs font-medium text-zinc-500 mb-3">
             <span className="text-zinc-300">Step 4 of 5</span>
             <span>Goals</span>
           </div>
-          <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
             <div className="h-full bg-purple-600 w-[80%] rounded-full shadow-[0_0_10px_rgba(139,92,246,0.5)]"></div>
           </div>
         </div>

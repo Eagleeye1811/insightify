@@ -68,6 +68,118 @@ async def chat_endpoint(request: ChatRequest):
         return {"response": "Sorry, I encountered an error processing your request."}
 
 
+@app.websocket("/ws/voice-agent")
+async def voice_agent_endpoint(websocket: WebSocket):
+    """Simple text-based voice agent for VoiceAgentFree.jsx"""
+    await websocket.accept()
+    print("✅ Client connected to voice agent")
+    
+    # Check API key on connection
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key or api_key == "your_google_api_key_here" or api_key == "your_key":
+        error_msg = "⚠️ GOOGLE_API_KEY not configured! Please add a valid API key to .env file"
+        print(error_msg)
+        await websocket.send_json({
+            "response": "Sorry, the AI service is not configured with a valid API key. Please check the server configuration."
+        })
+        await websocket.close()
+        return
+    
+    try:
+        # Initialize client with v1beta API (required for these models)
+        client = genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
+        
+        # Models to try in order of preference (based on availability check)
+        models_to_try = [
+            "models/gemini-flash-latest",      # Latest stable flash model
+            "models/gemini-2.5-flash",         # Stable 2.5 flash
+            "models/gemini-2.0-flash",         # Fallback to 2.0 flash
+            "models/gemini-pro-latest",        # More powerful but slower
+        ]
+        
+        while True:
+            print("⏳ Waiting for user speech...")
+            data = await websocket.receive_json()
+            user_text = data.get("text", "")
+            
+            if not user_text:
+                print("⚠️  Empty text received, skipping")
+                continue
+            
+            print(f"📝 Received transcription: '{user_text}'")
+            print("🤖 Sending to Gemini API...")
+            
+            response = None
+            last_error = None
+            
+            # Try each model until one succeeds
+            for model_name in models_to_try:
+                try:
+                    print(f"🔄 Trying model: {model_name}")
+                    
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=f"You are a helpful AI assistant for app developers. Be concise and friendly (2-3 sentences max). User says: {user_text}"
+                    )
+                    
+                    response_text = response.text
+                    print(f"✅ Success with {model_name}")
+                    print(f"📝 Response: '{response_text[:60]}...'")
+                    
+                    # Send successful response
+                    await websocket.send_json({"response": response_text})
+                    print("✅ Response sent to client\n")
+                    
+                    # Break out of model loop on success
+                    break
+                    
+                except Exception as model_error:
+                    error_str = str(model_error)
+                    last_error = model_error
+                    
+                    print(f"⚠️  Model {model_name} failed: {error_str[:100]}...")
+                    
+                    # Check if it's a quota error - try next model
+                    if "RESOURCE_EXHAUSTED" in error_str or "quota" in error_str.lower() or "429" in error_str:
+                        print(f"   → Quota exceeded, trying next model...")
+                        continue
+                    
+                    # Check if model not found - try next model
+                    elif "NOT_FOUND" in error_str or "404" in error_str:
+                        print(f"   → Model not found, trying next model...")
+                        continue
+                    
+                    # Other errors - still try next model
+                    else:
+                        print(f"   → Error occurred, trying next model...")
+                        continue
+            
+            # If all models failed, send error message
+            if response is None:
+                print(f"❌ All models failed. Last error: {str(last_error)[:200]}")
+                
+                error_msg = str(last_error) if last_error else "Unknown error"
+                
+                if "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
+                    await websocket.send_json({
+                        "response": "Sorry, I've reached my rate limit. Please wait a minute and try again, or enable billing for higher quotas."
+                    })
+                elif "API_KEY_INVALID" in error_msg or "not valid" in error_msg.lower():
+                    await websocket.send_json({
+                        "response": "Sorry, the API key is invalid. Please check the server configuration."
+                    })
+                else:
+                    await websocket.send_json({
+                        "response": "Sorry, I encountered an error. Please try again in a moment."
+                    })
+            
+    except Exception as e:
+        print(f"❌ WebSocket Error: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        print("👋 Client disconnected")
+
 @app.websocket("/ws/agent")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()

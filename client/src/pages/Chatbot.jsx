@@ -1,14 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import { useAuth } from '../context/AuthContext';
+import { useLocation } from 'react-router-dom';
+import './Chatbot.css';
 
 const Chatbot = () => {
-    const [messages, setMessages] = useState([
+    const { user } = useAuth(); // Get authenticated user
+    const location = useLocation();
+    
+    // Initialize messages from location state (if coming from popup) or with default message
+    const initialMessages = location.state?.messages || [
         {
             role: 'assistant',
             content: "Hello! I'm your Insightify AI Assistant. I can answer questions about your app reviews and insights. How can I help you today?",
         },
-    ]);
+    ];
+    
+    const [messages, setMessages] = useState(initialMessages);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
@@ -31,12 +41,20 @@ const Chatbot = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/chat', {
+            // Get user ID from AuthContext
+            const userId = user?.uid || 'anonymous';
+            
+            console.log('Sending chat request with userId:', userId); // Debug log
+
+            const response = await fetch('http://localhost:5001/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: userMessage }),
+                body: JSON.stringify({ 
+                    message: userMessage,
+                    userId: userId 
+                }),
             });
 
             if (!response.ok) {
@@ -44,17 +62,49 @@ const Chatbot = () => {
             }
 
             const data = await response.json();
-            setMessages((prev) => [
-                ...prev,
-                { role: 'assistant', content: data.response },
-            ]);
+            
+            // Check for rate limit error
+            if (data.error === 'rate_limit') {
+                setMessages((prev) => [
+                    ...prev,
+                    { 
+                        role: 'assistant', 
+                        content: "⏰ " + data.response,
+                        intent: data.intent,
+                        hasData: false 
+                    },
+                ]);
+            } else {
+                setMessages((prev) => [
+                    ...prev,
+                    { 
+                        role: 'assistant', 
+                        content: data.response,
+                        intent: data.intent,
+                        hasData: data.hasData 
+                    },
+                ]);
+            }
         } catch (error) {
             console.error('Error:', error);
+            
+            // Try to parse error response
+            let errorMessage = "I apologize, but I'm having trouble connecting to the server right now. Please make sure the backend server is running on port 5001 and try again.\n\nIn the meantime, I can still help with general questions about app analytics!";
+            
+            try {
+                const errorData = await error.response?.json();
+                if (errorData?.error === 'rate_limit') {
+                    errorMessage = "⏰ I'm currently experiencing high demand and have reached my rate limit. Please wait a minute and try again.\n\nI can still help with general advice! What would you like to know?";
+                }
+            } catch (parseError) {
+                // Use default error message
+            }
+            
             setMessages((prev) => [
                 ...prev,
                 {
                     role: 'assistant',
-                    content: "I'm sorry, I encountered an error connecting to the server. Please try again later.",
+                    content: errorMessage,
                 },
             ]);
         } finally {
@@ -63,62 +113,115 @@ const Chatbot = () => {
     };
 
     return (
-        <div className="chatbot-page" style={styles.page}>
-            <div className="chat-container" style={styles.container}>
-                <div className="chat-header" style={styles.header}>
-                    <div style={styles.headerContent}>
-                        <h2 style={{
-                            margin: 0,
-                            fontSize: '1.5rem',
-                            fontWeight: '700',
-                            background: 'linear-gradient(135deg, #fff 0%, #a78bfa 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            textAlign: 'center',
-                            letterSpacing: '0.5px'
-                        }}>
-                            Insightify Intelligence
-                        </h2>
-                    </div>
-                </div>
+        <div className="chatbot-page">
+            {/* Animated Background */}
+            <div className="chatbot-background">
+                <div className="chatbot-background-gradient" />
+                <div className="chatbot-background-pattern" />
+            </div>
+            
+            <div className="chatbot-container">
+                {/* Header */}
+                <header className="chatbot-header">
+                    <motion.div 
+                        className="chatbot-header-content"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <div className="chatbot-header-text">
+                            <h2 className="chatbot-header-title">
+                                Insightify Intelligence
+                            </h2>
+                            <p className="chatbot-header-subtitle">
+                                AI-powered insights at your fingertips
+                            </p>
+                        </div>
+                    </motion.div>
+                </header>
 
-                <div className="messages-area" style={styles.messagesArea}>
+                {/* Messages Area */}
+                <div className="chatbot-messages-area">
                     <AnimatePresence>
                         {messages.map((msg, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                                style={{
-                                    ...styles.messageRow,
-                                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                                }}
+                                className={`chatbot-message-row ${msg.role}`}
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                             >
                                 {msg.role === 'assistant' && (
-                                    <div style={styles.avatar}>
-                                        <Bot size={20} color="#fff" />
+                                    <div className="chatbot-avatar assistant">
+                                        <Bot size={22} color="#fff" />
                                     </div>
                                 )}
 
-                                <div
-                                    style={{
-                                        ...styles.bubble,
-                                        background:
-                                            msg.role === 'user'
-                                                ? 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'
-                                                : 'rgba(255, 255, 255, 0.05)',
-                                        border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                                        borderRadius: msg.role === 'user' ? '16px 16px 0 16px' : '16px 16px 16px 0',
-                                    }}
-                                >
-                                    <p style={{ margin: 0, lineHeight: '1.5' }}>{msg.content}</p>
+                                <div className={`chatbot-bubble ${msg.role}`}>
+                                    {msg.role === 'assistant' ? (
+                                        <ReactMarkdown
+                                            components={{
+                                                p: ({ node, ...props }) => <p style={{ margin: '0.5em 0', lineHeight: '1.7' }} {...props} />,
+                                                ul: ({ node, ...props }) => <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }} {...props} />,
+                                                ol: ({ node, ...props }) => <ol style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }} {...props} />,
+                                                li: ({ node, ...props }) => <li style={{ margin: '0.3rem 0' }} {...props} />,
+                                                strong: ({ node, ...props }) => <strong style={{ color: '#a78bfa', fontWeight: 600 }} {...props} />,
+                                                em: ({ node, ...props }) => <em style={{ color: '#c4b5fd' }} {...props} />,
+                                                code: ({ node, inline, ...props }) => 
+                                                    inline ? (
+                                                        <code style={{ 
+                                                            background: 'rgba(167, 139, 250, 0.15)', 
+                                                            padding: '2px 8px', 
+                                                            borderRadius: '5px',
+                                                            fontSize: '0.9em',
+                                                            color: '#e9d5ff',
+                                                            fontFamily: 'monospace'
+                                                        }} {...props} />
+                                                    ) : (
+                                                        <code style={{ 
+                                                            display: 'block',
+                                                            background: 'rgba(167, 139, 250, 0.1)', 
+                                                            padding: '12px', 
+                                                            borderRadius: '8px',
+                                                            fontSize: '0.9em',
+                                                            color: '#e9d5ff',
+                                                            fontFamily: 'monospace',
+                                                            overflowX: 'auto',
+                                                            margin: '0.5rem 0'
+                                                        }} {...props} />
+                                                    ),
+                                                h1: ({ node, ...props }) => <h1 style={{ fontSize: '1.5em', marginTop: '1em', marginBottom: '0.5em', color: '#a78bfa' }} {...props} />,
+                                                h2: ({ node, ...props }) => <h2 style={{ fontSize: '1.3em', marginTop: '0.8em', marginBottom: '0.4em', color: '#a78bfa' }} {...props} />,
+                                                h3: ({ node, ...props }) => <h3 style={{ fontSize: '1.1em', marginTop: '0.6em', marginBottom: '0.3em', color: '#c4b5fd' }} {...props} />,
+                                                blockquote: ({ node, ...props }) => <blockquote style={{ 
+                                                    borderLeft: '3px solid #a78bfa', 
+                                                    paddingLeft: '1rem', 
+                                                    margin: '0.5rem 0',
+                                                    color: '#c4b5fd',
+                                                    fontStyle: 'italic'
+                                                }} {...props} />,
+                                                hr: ({ node, ...props }) => <hr style={{ 
+                                                    border: 'none', 
+                                                    borderTop: '1px solid rgba(167, 139, 250, 0.2)', 
+                                                    margin: '1rem 0' 
+                                                }} {...props} />,
+                                                a: ({ node, ...props }) => <a style={{ 
+                                                    color: '#a78bfa', 
+                                                    textDecoration: 'underline' 
+                                                }} {...props} />,
+                                            }}
+                                        >
+                                            {msg.content}
+                                        </ReactMarkdown>
+                                    ) : (
+                                        <p style={{ margin: 0, lineHeight: '1.6' }}>{msg.content}</p>
+                                    )}
                                 </div>
 
                                 {msg.role === 'user' && (
-                                    <div style={{ ...styles.avatar, background: '#6366f1' }}>
-                                        <User size={20} color="#fff" />
+                                    <div className="chatbot-avatar user">
+                                        <User size={22} color="#fff" />
                                     </div>
                                 )}
                             </motion.div>
@@ -126,20 +229,17 @@ const Chatbot = () => {
 
                         {isLoading && (
                             <motion.div
+                                className="chatbot-message-row assistant"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                style={{
-                                    ...styles.messageRow,
-                                    justifyContent: 'flex-start',
-                                }}
                             >
-                                <div style={styles.avatar}>
-                                    <Bot size={20} color="#fff" />
+                                <div className="chatbot-avatar assistant">
+                                    <Bot size={22} color="#fff" />
                                 </div>
-                                <div style={{ ...styles.bubble, background: 'rgba(255, 255, 255, 0.05)' }}>
-                                    <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                                        <Loader className="spin" size={16} />
-                                        <span>Thinking...</span>
+                                <div className="chatbot-bubble assistant">
+                                    <div className="chatbot-loading">
+                                        <Loader className="chatbot-loading-spinner" size={16} color="#a78bfa" />
+                                        <span className="chatbot-loading-text">Analyzing insights...</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -148,148 +248,38 @@ const Chatbot = () => {
                     <div ref={messagesEndRef} />
                 </div>
 
-                <div className="input-area" style={styles.inputArea}>
-                    <form onSubmit={handleSubmit} style={styles.form}>
+                {/* Input Area */}
+                <motion.div 
+                    className="chatbot-input-area"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                >
+                    <form onSubmit={handleSubmit} className="chatbot-form">
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask about your app reviews..."
-                            style={styles.input}
+                            placeholder="Ask me anything about your app reviews..."
+                            className="chatbot-input"
                             disabled={isLoading}
+                            autoFocus
                         />
-                        <button
+                        <motion.button
                             type="submit"
                             disabled={!input.trim() || isLoading}
-                            style={{
-                                ...styles.sendButton,
-                                opacity: !input.trim() || isLoading ? 0.5 : 1,
-                                cursor: !input.trim() || isLoading ? 'not-allowed' : 'pointer',
-                            }}
+                            className="chatbot-send-button"
+                            whileHover={input.trim() && !isLoading ? { scale: 1.05, rotate: 5 } : {}}
+                            whileTap={input.trim() && !isLoading ? { scale: 0.95 } : {}}
+                            transition={{ duration: 0.2 }}
                         >
                             <Send size={20} />
-                        </button>
+                        </motion.button>
                     </form>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
 };
-
-const styles = {
-    page: {
-        height: 'calc(100vh - 80px)', // Precise height to fit viewport below navbar
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        background: '#000', // Deep black background like Voice Agent
-    },
-    container: {
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'rgba(10, 10, 10, 0.4)', // Darker, cleaner glass
-        backdropFilter: 'blur(20px)',
-        borderRadius: '0 0 16px 16px',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-        overflow: 'hidden',
-        margin: '0',
-        height: '100%',
-        boxShadow: 'none', // Remove heavy shadow for cleaner look
-    },
-    header: {
-        padding: '20px',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        background: 'rgba(0, 0, 0, 0.3)',
-    },
-    headerContent: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-    },
-    messagesArea: {
-        flex: 1,
-        padding: '20px',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
-    },
-    messageRow: {
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: '10px',
-        width: '100%',
-    },
-    avatar: {
-        width: '36px',
-        height: '36px',
-        borderRadius: '50%',
-        background: '#8b5cf6',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    },
-    bubble: {
-        padding: '12px 16px',
-        maxWidth: '70%',
-        color: '#fff',
-        fontSize: '0.95rem',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        wordWrap: 'break-word',
-    },
-    inputArea: {
-        padding: '20px',
-        borderTop: 'none',
-        background: 'transparent',
-        display: 'flex',
-        justifyContent: 'center',
-    },
-    form: {
-        display: 'flex',
-        gap: '10px',
-        position: 'relative',
-        width: '100%',
-        maxWidth: '700px',
-        background: 'rgba(15, 15, 15, 0.8)', // Darker form background
-        backdropFilter: 'blur(16px)',
-        padding: '10px',
-        borderRadius: '24px',
-        border: '1px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-    },
-    input: {
-        flex: 1,
-        padding: '12px 16px',
-        borderRadius: '12px',
-        border: 'none',
-        background: 'transparent',
-        color: '#e2e8f0', // Slight off-white for better readability
-        fontSize: '1rem',
-        outline: 'none',
-    },
-    sendButton: {
-        background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-        border: 'none',
-        borderRadius: '16px',
-        width: '48px',
-        height: '48px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
-        transition: 'transform 0.1s',
-        flexShrink: 0,
-    },
-};
-
-// Add global style for spin animation if needed, though usually better in CSS
-// For now, we rely on framer-motion or simple CSS if 'spin' class exists
-// If not, we can add a style tag or modify index.css. 
-// Let's add a style tag to the document head dynamically or just inline keyframes?
-// Inline keyframes are tricky in React inline styles. 
-// We'll trust the user has a spinner or just use the text 'Thinking...'
 
 export default Chatbot;

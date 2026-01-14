@@ -8,6 +8,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./components/Layout";
+import PrivateRoute from "./components/PrivateRoute";
 import OnBoarding1 from "./pages/OnBoarding/OnBoarding1";
 import OnBoarding2 from "./pages/OnBoarding/OnBoarding2";
 import OnBoarding3 from "./pages/OnBoarding/OnBoarding3";
@@ -23,6 +24,7 @@ import Profile from "./pages/Profile";
 import BillingPage from "./pages/Biling";
 import Chatbot from "./pages/Chatbot";
 import AnalyzeApp from "./pages/AnalyzeApp";
+import Reviews from "./pages/Reviews";
 
 function App() {
   return (
@@ -41,58 +43,125 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
-            {/* Authenticated Routes with Layout */}
+            {/* Protected Routes - Require Authentication */}
 
             <Route
               path="/analyze"
               element={
-                <Layout>
-                  <AnalyzeApp />
-                </Layout>
+                <PrivateRoute>
+                  <Layout>
+                    <AnalyzeApp />
+                  </Layout>
+                </PrivateRoute>
               }
             />
 
             <Route
               path="/dashboard"
               element={
-                <Layout>
-                  <Dashboard />
-                </Layout>
+                <PrivateRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </PrivateRoute>
               }
             />
 
-            <Route path="/onboarding" element={<OnBoarding1 />} />
-            <Route path="/onboarding/step-2" element={<OnBoarding2 />} />
-            <Route path="/onboarding/step-3" element={<OnBoarding3 />} />
-            <Route path="/onboarding/step-4" element={<OnBoarding4 />} />
-            <Route path="/onboarding/step-5" element={<OnBoarding5 />} />
+            <Route 
+              path="/onboarding" 
+              element={
+                <PrivateRoute>
+                  <OnBoarding1 />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/onboarding/step-2" 
+              element={
+                <PrivateRoute>
+                  <OnBoarding2 />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/onboarding/step-3" 
+              element={
+                <PrivateRoute>
+                  <OnBoarding3 />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/onboarding/step-4" 
+              element={
+                <PrivateRoute>
+                  <OnBoarding4 />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/onboarding/step-5" 
+              element={
+                <PrivateRoute>
+                  <OnBoarding5 />
+                </PrivateRoute>
+              } 
+            />
 
-          <Route path="/voice-agent" element={
-            <Layout>
-              <VoiceAgentFree />
-            </Layout>
-          } />
+            <Route 
+              path="/voice-agent" 
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <VoiceAgentFree />
+                  </Layout>
+                </PrivateRoute>
+              } 
+            />
 
             <Route
               path="/profile"
               element={
-                <Layout>
-                  <Profile />
-                </Layout>
+                <PrivateRoute>
+                  <Layout>
+                    <Profile />
+                  </Layout>
+                </PrivateRoute>
               }
             />
 
-          <Route path="/billing" element={
-            <Layout>
-              <BillingPage />
-            </Layout>
-          } />
+            <Route 
+              path="/billing" 
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <BillingPage />
+                  </Layout>
+                </PrivateRoute>
+              } 
+            />
 
-          <Route path="/chat" element={
-            <Layout>
-              <Chatbot />
-            </Layout>
-          } />
+            <Route 
+              path="/chat" 
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <Chatbot />
+                  </Layout>
+                </PrivateRoute>
+              } 
+            />
+
+            <Route 
+              path="/reviews" 
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <Reviews />
+                  </Layout>
+                </PrivateRoute>
+              } 
+            />
 
           {/* Catch-all route */}
           <Route path="*" element={<Navigate to="/" replace />} />

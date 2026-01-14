@@ -294,12 +294,13 @@ function SignupPage() {
           createdAt: new Date(),
           onboardingCompleted: false,
         });
+        console.log("New user account created with email, navigating to onboarding");
       } catch (firestoreErr) {
         console.error("Firestore error (non-critical):", firestoreErr);
         // Continue anyway - user is created in Firebase Auth
       }
 
-      // Always navigate to onboarding after successful auth
+      // Always navigate to onboarding for new signup
       navigate("/onboarding");
     } catch (err) {
       console.error("Signup error:", err);
@@ -347,13 +348,19 @@ function SignupPage() {
         console.log("New user account created, navigating to onboarding");
         navigate("/onboarding");
       } else {
-        // EXISTING USER - Go directly to dashboard
-        console.log("Existing user detected, navigating to dashboard");
-        navigate("/dashboard");
+        // EXISTING USER - Check onboarding status
+        const userData = userSnap.data();
+        if (userData.onboardingCompleted) {
+          console.log("Existing user with completed onboarding, navigating to dashboard");
+          navigate("/dashboard");
+        } else {
+          console.log("Existing user with incomplete onboarding, navigating to onboarding");
+          navigate("/onboarding");
+        }
       }
     } catch (err) {
       console.error("Google signup error:", err);
-      setError("Failed to sign up with Google. Please try again.");
+      setError("Failed to continue with Google. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -533,9 +540,10 @@ function SignupPage() {
               className="w-full h-12 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-white"
               type="button"
               onClick={handleGoogleSignup}
+              disabled={isLoading}
             >
               <Mail className="mr-2 size-5" />
-              Sign up with Google
+              {isLoading ? "Connecting..." : "Continue with Google"}
             </Button>
           </div>
 

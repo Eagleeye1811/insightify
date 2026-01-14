@@ -14,115 +14,107 @@ const OnBoarding1 = () => {
   };
 
   return (
-    // Outer container: Dark theme background, flex layout for split screen
-    <div className="min-h-screen bg-black text-white font-sans flex overflow-hidden">
+    // Outer container: Fixed height, no scrolling, flex layout for split screen
+    <div className="h-screen bg-black text-white font-sans flex overflow-hidden">
       {/* ================= LEFT COLUMN: CONTENT ================= */}
       {/* Full width on mobile, 50% on large screens. Centered vertically. */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-12 lg:px-24 py-12 relative z-10">
-        {/* Optional Brand Header located top left */}
-        <div className="absolute top-8 left-8 sm:left-12 lg:left-24 flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-gradient-to-br from-purple-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Layers className="text-white" size={18} />
-          </div>
-          <span className="font-bold text-xl tracking-tight">Insightify</span>
-        </div>
-
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 relative z-10 overflow-y-auto">
         {/* Main Text Content Area */}
-        <div className="max-w-lg mx-auto lg:mx-0 mt-16 lg:mt-0">
+        <div className="max-w-lg mx-auto lg:mx-0 w-full">
           {/* Headline & Subtext */}
-          <div className="space-y-6">
-            <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-[1.1]">
-              Welcome to <br />
+          <div className="space-y-4 sm:space-y-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]">
+              Grow Your App by <br />
               {/* Gradient text effect for branding */}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-400 to-purple-500">
-                Insightify
+                Understanding Reviews
               </span>
             </h1>
-            <p className="text-lg text-zinc-400 leading-relaxed max-w-md">
-              The comprehensive platform for mastering your app's performance.
-              Connect data sources, analyze sentiment with AI, and grow faster.
+            <p className="text-base sm:text-lg text-zinc-400 leading-relaxed max-w-md">
+              We analyze every review to show you exactly what users love and what needs improvement. 
+              Turn feedback into growth with AI-powered insights.
             </p>
           </div>
 
           {/* Feature List - Adapted to Dark Theme */}
-          <div className="space-y-8 pt-12">
+          <div className="space-y-5 sm:space-y-6 md:space-y-8 pt-8 sm:pt-10 md:pt-12">
             {/* Feature 1 */}
-            <div className="flex gap-5 group">
+            <div className="flex gap-3 sm:gap-4 md:gap-5 group">
               {/* Icon Container: Dark zinc bg with subtle border and hover glow */}
-              <div className="shrink-0 mt-1 w-12 h-12 rounded-full bg-zinc-900/50 border border-white/10 flex items-center justify-center group-hover:border-purple-500/50 group-hover:bg-purple-500/10 transition-all duration-300">
+              <div className="shrink-0 mt-1 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-900/50 border border-white/10 flex items-center justify-center group-hover:border-purple-500/50 group-hover:bg-purple-500/10 transition-all duration-300">
                 <BarChart2
-                  size={22}
-                  className="text-purple-500 transition-colors"
+                  size={20}
+                  className="text-purple-500 transition-colors sm:w-[22px] sm:h-[22px]"
                 />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  Connect Data Sources
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
+                  Analyze All Your Reviews
                 </h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">
-                  Seamlessly integrate with App Store & Google Play consoles for
-                  real-time tracking.
+                <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">
+                  We automatically collect and analyze reviews from App Store & Google Play 
+                  to give you a complete picture.
                 </p>
               </div>
             </div>
 
             {/* Feature 2 */}
-            <div className="flex gap-5 group">
-              <div className="shrink-0 mt-1 w-12 h-12 rounded-full bg-zinc-900/50 border border-white/10 flex items-center justify-center group-hover:border-purple-500/50 group-hover:bg-purple-500/10 transition-all duration-300">
-                <Zap size={22} className="text-purple-500 transition-colors" />
+            <div className="flex gap-3 sm:gap-4 md:gap-5 group">
+              <div className="shrink-0 mt-1 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-900/50 border border-white/10 flex items-center justify-center group-hover:border-purple-500/50 group-hover:bg-purple-500/10 transition-all duration-300">
+                <Zap size={20} className="text-purple-500 transition-colors sm:w-[22px] sm:h-[22px]" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  AI-Powered Analysis
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
+                  Discover What Users Really Want
                 </h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">
-                  Automate review tagging and analyze user sentiment trends
-                  instantly.
+                <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">
+                  Our AI reads every review to identify patterns, complaints, and 
+                  feature requests you might have missed.
                 </p>
               </div>
             </div>
 
             {/* Feature 3 */}
-            <div className="flex gap-5 group">
-              <div className="shrink-0 mt-1 w-12 h-12 rounded-full bg-zinc-900/50 border border-white/10 flex items-center justify-center group-hover:border-emerald-500/50 group-hover:bg-emerald-500/10 transition-all duration-300">
+            <div className="flex gap-3 sm:gap-4 md:gap-5 group">
+              <div className="shrink-0 mt-1 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-900/50 border border-white/10 flex items-center justify-center group-hover:border-emerald-500/50 group-hover:bg-emerald-500/10 transition-all duration-300">
                 <ShieldCheck
-                  size={22}
-                  className="text-emerald-500 transition-colors"
+                  size={20}
+                  className="text-emerald-500 transition-colors sm:w-[22px] sm:h-[22px]"
                 />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  Growth Recommendations
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
+                  Get Clear Steps to Grow
                 </h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">
-                  Receive actionable, data-driven steps to improve ratings and
-                  retention.
+                <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">
+                  We show you exactly what to fix, what to improve, and what features 
+                  to build next based on real user feedback.
                 </p>
               </div>
             </div>
           </div>
 
           {/* Action Area (Button and Steps) */}
-          <div className="pt-12 flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
+          <div className="pt-8 sm:pt-10 md:pt-12 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 md:gap-8">
             <button
               onClick={handleGetStarted}
               // White button on black background for maximum contrast, matching reference style but inverted colors
-              className="group relative inline-flex items-center gap-3 bg-white text-black px-8 py-4 rounded-full font-bold text-sm hover:bg-zinc-200 transition-all duration-300 hover:pr-12 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+              className="group relative inline-flex items-center gap-3 bg-white text-black px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-xs sm:text-sm hover:bg-zinc-200 transition-all duration-300 hover:pr-10 sm:hover:pr-12 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             >
               Get Started
               {/* Animated arrow that slides in on hover */}
               <ArrowRight
-                size={18}
-                className="absolute right-4 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+                size={16}
+                className="absolute right-3 sm:right-4 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 sm:w-[18px] sm:h-[18px]"
               />
             </button>
 
             {/* Step indicator */}
-            <div className="flex items-center gap-3 text-sm font-medium text-zinc-500">
+            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium text-zinc-500">
               <span>Step 1 of 5</span>
               {/* Progress bar visual */}
-              <div className="w-20 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="w-1/3 h-full bg-purple-600 rounded-full"></div>
+              <div className="w-16 sm:w-20 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="w-1/5 h-full bg-purple-600 rounded-full"></div>
               </div>
             </div>
           </div>
@@ -131,7 +123,7 @@ const OnBoarding1 = () => {
 
       {/* ================= RIGHT COLUMN: IMAGE ================= */}
       {/* Hidden on mobile/tablet, visible on desktop (lg screen and up) */}
-      <div className="hidden lg:block w-1/2 relative bg-zinc-900 h-full overflow-hidden">
+      <div className="hidden lg:flex w-1/2 relative bg-zinc-900 overflow-hidden">
         {/* Gradient Overlay: Blends the hard edge between the black content area and the image */}
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10 pointer-events-none"></div>
 

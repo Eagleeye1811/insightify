@@ -104,15 +104,6 @@ const Profile = () => {
       <div className="glass-panel mx-6 lg:mx-10 mt-10 p-8 rounded-2xl relative mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative">
 
-          {/* Sign Out Button */}
-          <button
-            onClick={handleLogout}
-            className="absolute top-0 right-0 md:top-2 md:right-2 flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg transition-all text-xs font-medium"
-          >
-            <LogOut size={14} />
-            <span>Sign Out</span>
-          </button>
-
           {/* Profile Photo */}
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
@@ -143,17 +134,6 @@ const Profile = () => {
               </button>
             </div>
             <p className="text-zinc-400 font-medium text-lg">{user.email}</p>
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div> Online
-              </span>
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold">
-                <ShieldCheck size={12} /> Analyst Tier
-              </span>
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs font-semibold">
-                <Zap size={12} /> Pro Plan
-              </span>
-            </div>
           </div>
         </div>
       </div>

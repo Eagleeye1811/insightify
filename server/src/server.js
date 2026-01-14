@@ -4,6 +4,7 @@ const cors = require('cors');
 const apiRoutes = require('./routes/api.routes');
 const scraperRoutes = require('./routes/scraperRoutes');
 const appsRoutes = require('./routes/apps.routes');
+const chatRoutes = require('./routes/chat.routes');
 
 const http = require('http');
 const { Server } = require("socket.io");
@@ -29,6 +30,7 @@ app.use(express.json());
 app.use('/api/apps', appsRoutes);
 app.use('/api', apiRoutes);
 app.use('/api', scraperRoutes);
+app.use('/chat', chatRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: 'Insightify API is running' });

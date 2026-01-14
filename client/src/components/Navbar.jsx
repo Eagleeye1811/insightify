@@ -1,16 +1,26 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Sparkles } from "lucide-react";
-import { useAuth } from "../context/authcontext";
+import { LogOut } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import "../pages/Landing.css"; // Reuse existing styles
+import logo from "../assets/logo.png";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { currentUser } = useAuth();
+    const { user, logout } = useAuth();
 
     // Check if we are on the landing page (to optionally change style)
     const isLanding = location.pathname === "/";
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate("/");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
 
     return (
         <nav className="fixed top-6 left-0 right-0 z-100 px-6">
@@ -18,12 +28,14 @@ const Navbar = () => {
                 <div className="flex items-center justify-between bg-black/80 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 shadow-2xl">
                     {/* Logo */}
                     <div
-                        className="nav-brand cursor-pointer"
+                        className="nav-brand cursor-pointer flex items-center gap-2"
                         onClick={() => navigate("/")}
                     >
-                        <div className="brand-icon">
-                            <Sparkles size={18} color="white" />
-                        </div>
+                        <img 
+                            src={logo} 
+                            alt="Insightify" 
+                            className="w-6 h-6 object-contain"
+                        />
                         Insightify
                     </div>
 
@@ -50,6 +62,16 @@ const Navbar = () => {
               Analyze
             </button>
             <button
+              onClick={() => navigate("/reviews")}
+              className={`nav-link-pill ${
+                location.pathname === "/reviews"
+                  ? "text-white"
+                  : "text-white/70"
+              }`}
+            >
+              Reviews
+            </button>
+            <button
               onClick={() => navigate("/voice-agent")}
               className={`nav-link-pill ${
                 location.pathname === "/voice-agent"
@@ -73,21 +95,37 @@ const Navbar = () => {
 
                     {/* Right Side Actions */}
                     <div className="nav-actions">
-                        {currentUser ? (
+                        {user ? (
                             // Logged In View
                             <div className="flex items-center gap-4">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-white text-sm shadow-lg">
-                                    {currentUser.email?.[0].toUpperCase()}
+                                <div 
+                                    onClick={() => navigate('/profile')}
+                                    className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-white text-sm shadow-lg cursor-pointer hover:scale-110 transition-transform duration-300"
+                                >
+                                    {user.email?.[0].toUpperCase()}
                                 </div>
+                                <button 
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-2 text-white/80 hover:text-white font-medium text-sm transition-colors duration-300"
+                                >
+                                    <LogOut size={16} />
+                                    Logout
+                                </button>
                             </div>
                         ) : (
                             // Logged Out View
                             <div className="flex items-center gap-3">
-                                <button onClick={() => navigate('/login')} className="text-white/80 hover:text-white font-medium text-sm transition-colors duration-300 hidden sm:block">
+                                <button 
+                                    onClick={() => navigate('/login')} 
+                                    className="text-white/80 hover:text-white font-medium text-sm transition-colors duration-300"
+                                >
                                     Login
                                 </button>
-                                <button onClick={() => navigate('/login')} className="bg-white text-black px-5 py-2 rounded-full font-medium text-sm hover:bg-white/90 transition-all duration-300 shadow-lg">
-                                    Get Started
+                                <button 
+                                    onClick={() => navigate('/signup')} 
+                                    className="bg-white text-black px-5 py-2 rounded-full font-medium text-sm hover:bg-white/90 transition-all duration-300 shadow-lg"
+                                >
+                                    Sign Up
                                 </button>
                             </div>
                         )}

@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const requestQueue = require('../utils/requestQueue');
 
 /**
  * Analyzes app reviews using Google Gemini to extract insights.
@@ -18,12 +19,13 @@ exports.analyzeReviews = async (reviews, metadata) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     // List of models to try in order of preference
-    // 2.0-flash-exp often has different quotas than stable 2.0-flash
+    // UPDATED: Using current Gemini model names (Jan 2026)
     const MODELS_TO_TRY = [
-      "gemini-2.0-flash-exp",
-      "gemini-2.5-flash",
-      "gemini-flash-latest",
-      "gemini-pro"
+      "gemini-2.5-flash",        // Latest & fastest (Jan 2026)
+      "gemini-flash-latest",     // Auto-updates to latest flash
+      "gemini-2.0-flash",        // Stable 2.0 flash
+      "gemini-2.5-pro",          // Most capable (Jan 2026)
+      "gemini-pro-latest"        // Auto-updates to latest pro
     ];
 
     // Filter valid reviews first
@@ -98,15 +100,18 @@ Return ONLY the valid JSON object. Do not wrap in markdown code blocks.
 
     let lastError = null;
 
-    // Try each model until one works
+    // Try each model until one works - with request queuing for rate limiting
     for (const modelName of MODELS_TO_TRY) {
       try {
         console.log(`🤖 Trying AI Model: ${modelName}...`);
         const model = genAI.getGenerativeModel({ model: modelName });
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        // Use request queue to throttle API calls (high priority for analysis)
+        const text = await requestQueue.enqueue(async () => {
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          return response.text();
+        }, 'high'); // High priority for app analysis
 
         // Clean up markdown if present (Gemini sometimes adds ```json ... ```)
         const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();

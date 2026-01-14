@@ -111,10 +111,10 @@ export default function Landing() {
                     </div> */}
 
           <h1 className="hero-title pt-25">
-            <span className="bg-gradient-to-r from-white via-violet-700 to-white bg-clip-text text-transparent">
-              Transform Reviews into <br />
-              Actionable Growth
-            </span>
+          Transform <span style={{ color: "#a855f7" }}>Reviews</span> into
+            <br />
+            <span className="gradient-text">Actionable</span>{" "}
+            <span style={{ color: "#a855f7" }}>Growth</span>
           </h1>
 
           <p className="hero-description">

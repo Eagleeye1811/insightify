@@ -4,6 +4,8 @@ import { CardContainer, CardBody, CardItem } from "../components/ui/3d-card";
 import AppSelector from "../components/AppSelector";
 import { authenticatedFetch } from "../lib/authHelper";
 import { io } from "socket.io-client";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 import {
   TrendingUp,
@@ -153,29 +155,7 @@ const getSeverityColor = (severity) => {
 };
 
 const getPriorityColor = (priority) => {
-  switch (priority) {
-    case "High":
-      return "#808080";
-    case "Medium":
-      return "#404808080040";
-    case "Low":
-      return "#808080";
-    default:
-      return "#999999";
-  }
-};
-
-const getTagColor = (tag) => {
-  switch (tag) {
-    case "Bug":
-      return "#1a1a1a";
-    case "Feature":
-      return "#404040";
-    case "Praise":
-      return "#666666";
-    default:
-      return "#999999";
-  }
+  return "#999999"; // Same medium gray for all priorities
 };
 
 // ============================================
@@ -187,7 +167,6 @@ export default function Dashboard() {
   const appId = searchParams.get('appId');
 
   const [loading, setLoading] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("all");
 
   const [mockAppData, setAppData] = useState(defaultAppData);
   const navigate = useNavigate();
@@ -222,11 +201,37 @@ export default function Dashboard() {
     });
 
     socket.on("analysis_complete", (analysis) => {
-      console.log("Received AI Analysis:", analysis);
+      console.log("📡 Received AI Analysis via socket:", analysis);
+      console.log("📡 Features from socket:", analysis.features);
       if (isMounted) {
         setIsAnalyzing(false);
+        
+        // Transform features if needed (handle old format)
+        const transformedFeatures = (analysis.features || []).map(feature => {
+          // If already has 'requests' and 'effort', use as-is
+          if (feature.requests !== undefined && feature.effort !== undefined) {
+            return feature;
+          }
+          
+          // Otherwise, transform from old format
+          let effort = "Medium";
+          if (feature.type === "UX" && feature.impact === "Low") effort = "Low";
+          else if (feature.type === "Performance" && feature.impact === "High") effort = "High";
+          else if (feature.impact === "High") effort = "Medium";
+          else if (feature.impact === "Low") effort = "Low";
+
+          return {
+            name: feature.name,
+            requests: feature.frequency || feature.requests || 0,
+            impact: feature.impact,
+            type: feature.type,
+            effort: effort,
+            priority: feature.impact === "High" ? "High" : feature.impact === "Medium" ? "Medium" : "Low"
+          };
+        });
+        
         setBugCategories(analysis.bugs || []);
-        setFeatureRequests(analysis.features || []);
+        setFeatureRequests(transformedFeatures);
         setUninstallReasons(analysis.uninstallReasons || []);
         setAiRecommendations(analysis.recommendations || []);
         // Update sentiment if available
@@ -316,10 +321,42 @@ export default function Dashboard() {
         const { metadata, reviews, analysis } = data;
 
         if (analysis) {
+          console.log("📊 Analysis data received:", analysis);
+          console.log("🎯 Features:", analysis.features);
+          console.log("🐛 Bugs:", analysis.bugs);
+          console.log("⚠️ Uninstall Reasons:", analysis.uninstallReasons);
+          console.log("💡 Recommendations:", analysis.recommendations);
+          
+          // Transform features if needed (handle old format)
+          const transformedFeatures = (analysis.features || []).map(feature => {
+            // If already has 'requests' and 'effort', use as-is
+            if (feature.requests !== undefined && feature.effort !== undefined) {
+              return feature;
+            }
+            
+            // Otherwise, transform from old format
+            let effort = "Medium";
+            if (feature.type === "UX" && feature.impact === "Low") effort = "Low";
+            else if (feature.type === "Performance" && feature.impact === "High") effort = "High";
+            else if (feature.impact === "High") effort = "Medium";
+            else if (feature.impact === "Low") effort = "Low";
+
+            return {
+              name: feature.name,
+              requests: feature.frequency || feature.requests || 0,
+              impact: feature.impact,
+              type: feature.type,
+              effort: effort,
+              priority: feature.impact === "High" ? "High" : feature.impact === "Medium" ? "Medium" : "Low"
+            };
+          });
+          
           setBugCategories(analysis.bugs || []);
-          setFeatureRequests(analysis.features || []);
+          setFeatureRequests(transformedFeatures);
           setUninstallReasons(analysis.uninstallReasons || []);
           setAiRecommendations(analysis.recommendations || []);
+        } else {
+          console.warn("⚠️ No analysis data found in API response");
         }
 
         if (metadata && reviews) {
@@ -439,12 +476,16 @@ export default function Dashboard() {
             mostAffectedVersion: metadata.version || "unknown",
           });
 
-          setRecentReviews(rList.slice(0, 5).map(r => ({
+          // Filter for the top 5 most recent reviews (flagged during scraping)
+          const topRecentReviews = rList.filter(r => r.isTopRecent).slice(0, 5);
+          // Fallback to first 5 if no flagged reviews found
+          const reviewsToDisplay = topRecentReviews.length > 0 ? topRecentReviews : rList.slice(0, 5);
+          
+          setRecentReviews(reviewsToDisplay.map(r => ({
             text: r.text,
             rating: r.score,
             version: r.version,
-            date: r.date,
-            tag: r.score >= 4 ? "Praise" : "Bug" // Simple heuristic
+            date: r.date
           })));
         }
         setLoading(false);
@@ -475,6 +516,208 @@ export default function Dashboard() {
       console.error("Failed to trigger AI:", err);
       setIsAnalyzing(false);
     }
+  };
+
+  // PDF Export Function
+  const generatePDFReport = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPosition = 20;
+
+    // Helper function to add new page if needed
+    const checkPageBreak = (neededSpace = 20) => {
+      if (yPosition + neededSpace > pageHeight - 20) {
+        doc.addPage();
+        yPosition = 20;
+        return true;
+      }
+      return false;
+    };
+
+    // Title
+    doc.setFontSize(24);
+    doc.setTextColor(124, 58, 237); // Purple
+    doc.text("Insightify Analytics Report", pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 15;
+
+    // App Name
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text(mockAppData.name, pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 10;
+
+    // Date
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 15;
+
+    // Section 1: Key Metrics
+    doc.setFontSize(16);
+    doc.setTextColor(124, 58, 237);
+    doc.text("Key Metrics", 14, yPosition);
+    yPosition += 10;
+
+    const metricsData = [
+      ["Total Reviews Analyzed", topMetrics.totalReviewsAnalyzed.toLocaleString()],
+      ["Average Rating", `${topMetrics.averageRating} ⭐`],
+      ["App Health Score", `${topMetrics.healthScore}/100`],
+      ["Total Installs", mockAppData.installs],
+      ["Last Updated", mockAppData.lastUpdated],
+    ];
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [["Metric", "Value"]],
+      body: metricsData,
+      theme: "striped",
+      headStyles: { fillColor: [124, 58, 237] },
+      margin: { left: 14 },
+    });
+    yPosition = doc.lastAutoTable.finalY + 15;
+
+    // Section 2: Sentiment Analysis
+    checkPageBreak(40);
+    doc.setFontSize(16);
+    doc.setTextColor(124, 58, 237);
+    doc.text("Sentiment Breakdown", 14, yPosition);
+    yPosition += 10;
+
+    const sentimentData = [
+      ["Positive", `${topMetrics.sentimentBreakdown.positive}%`],
+      ["Neutral", `${topMetrics.sentimentBreakdown.neutral}%`],
+      ["Negative", `${topMetrics.sentimentBreakdown.negative}%`],
+    ];
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [["Sentiment", "Percentage"]],
+      body: sentimentData,
+      theme: "grid",
+      headStyles: { fillColor: [124, 58, 237] },
+      margin: { left: 14 },
+    });
+    yPosition = doc.lastAutoTable.finalY + 15;
+
+    // Section 3: Rating Distribution
+    if (ratingDistribution.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(16);
+      doc.setTextColor(124, 58, 237);
+      doc.text("Rating Distribution", 14, yPosition);
+      yPosition += 10;
+
+      const ratingData = ratingDistribution.map(item => [
+        `${item.rating} ⭐`,
+        item.count.toLocaleString(),
+        `${Math.round((item.count / topMetrics.totalReviewsAnalyzed) * 100)}%`
+      ]);
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [["Rating", "Count", "Percentage"]],
+        body: ratingData,
+        theme: "grid",
+        headStyles: { fillColor: [124, 58, 237] },
+        margin: { left: 14 },
+      });
+      yPosition = doc.lastAutoTable.finalY + 15;
+    }
+
+    // Section 4: Bug Analysis
+    if (bugCategories.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(16);
+      doc.setTextColor(124, 58, 237);
+      doc.text("Top Bug Categories", 14, yPosition);
+      yPosition += 10;
+
+      const bugData = bugCategories.slice(0, 10).map(bug => [
+        bug.category,
+        bug.frequency.toString(),
+        bug.impact
+      ]);
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [["Category", "Frequency", "Impact"]],
+        body: bugData,
+        theme: "striped",
+        headStyles: { fillColor: [124, 58, 237] },
+        margin: { left: 14 },
+      });
+      yPosition = doc.lastAutoTable.finalY + 15;
+    }
+
+    // Section 5: Feature Requests
+    if (featureRequests.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(16);
+      doc.setTextColor(124, 58, 237);
+      doc.text("Top Feature Requests", 14, yPosition);
+      yPosition += 10;
+
+      const featureData = featureRequests.slice(0, 10).map(feature => [
+        feature.name,
+        feature.requests.toString(),
+        feature.impact,
+        feature.effort
+      ]);
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [["Feature", "Requests", "Impact", "Effort"]],
+        body: featureData,
+        theme: "grid",
+        headStyles: { fillColor: [124, 58, 237] },
+        margin: { left: 14 },
+      });
+      yPosition = doc.lastAutoTable.finalY + 15;
+    }
+
+    // Section 6: AI Recommendations
+    if (aiRecommendations.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(16);
+      doc.setTextColor(124, 58, 237);
+      doc.text("AI Recommendations", 14, yPosition);
+      yPosition += 10;
+
+      aiRecommendations.forEach((rec, index) => {
+        checkPageBreak(30);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${index + 1}. ${rec.title || rec.recommendation}`, 14, yPosition);
+        yPosition += 7;
+        
+        if (rec.description || rec.reason) {
+          doc.setFontSize(10);
+          doc.setTextColor(100, 100, 100);
+          const splitText = doc.splitTextToSize(rec.description || rec.reason, pageWidth - 30);
+          doc.text(splitText, 20, yPosition);
+          yPosition += splitText.length * 5 + 5;
+        }
+      });
+    }
+
+    // Footer
+    const totalPages = doc.internal.pages.length - 1;
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(
+        `Page ${i} of ${totalPages} | Generated by Insightify`,
+        pageWidth / 2,
+        pageHeight - 10,
+        { align: "center" }
+      );
+    }
+
+    // Save the PDF
+    const fileName = `${mockAppData.name.replace(/\s+/g, '_')}_Analytics_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
   };
 
   if (loading) {
@@ -553,6 +796,8 @@ export default function Dashboard() {
             display: "flex",
             alignItems: "center",
             gap: "var(--space-lg)",
+            position: "relative",
+            zIndex: 50,
           }}
         >
           {mockAppData.icon ? (
@@ -680,6 +925,7 @@ export default function Dashboard() {
           </div>
           <AppSelector />
           <button
+            onClick={generatePDFReport}
             style={{
               background: "#ffffff",
               border: "1px solid #ffffff",
@@ -714,6 +960,7 @@ export default function Dashboard() {
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: "var(--space-lg)",
             marginBottom: "var(--space-xl)",
+            width: "100%",
           }}
         >
           {/* Total Reviews */}
@@ -1969,21 +2216,23 @@ export default function Dashboard() {
                 >
                   {bug.frequency}%
                 </div>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    color: "#d1d5db",
-                    lineHeight: 1.5,
-                    marginBottom: "var(--space-md)",
-                    fontStyle: "italic",
-                    background: "#1a1a1a",
-                    padding: "0.75rem",
-                    borderRadius: "var(--radius-sm)",
-                    borderLeft: `3px solid ${getSeverityColor(bug.severity)}`,
-                  }}
-                >
-                  "{bug.sample}"
-                </p>
+                {bug.sample && bug.sample.trim() !== "" && (
+                  <p
+                    style={{
+                      fontSize: "0.875rem",
+                      color: "#d1d5db",
+                      lineHeight: 1.5,
+                      marginBottom: "var(--space-md)",
+                      fontStyle: "italic",
+                      background: "#1a1a1a",
+                      padding: "0.75rem",
+                      borderRadius: "var(--radius-sm)",
+                      borderLeft: `3px solid ${getSeverityColor(bug.severity)}`,
+                    }}
+                  >
+                    "{bug.sample}"
+                  </p>
+                )}
                 <div
                   style={{
                     display: "flex",
@@ -2558,7 +2807,7 @@ export default function Dashboard() {
                       letterSpacing: "1px",
                     }}
                   >
-                    {feature.requests}%
+                    {Math.round((feature.requests / 100) * topMetrics.totalReviewsAnalyzed)}
                   </div>
                   <p
                     style={{
@@ -2568,7 +2817,7 @@ export default function Dashboard() {
                       fontWeight: 500,
                     }}
                   >
-                    of users requesting
+                    reviews requesting
                   </p>
                 </div>
 
@@ -2695,42 +2944,12 @@ export default function Dashboard() {
       >
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
             marginBottom: "var(--space-lg)",
           }}
         >
           <h3 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
             Recent Reviews
           </h3>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            {["All", "Bug", "Feature", "Praise"].map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setSelectedFilter(filter.toLowerCase())}
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: "var(--radius-sm)",
-                  border: "none",
-                  background:
-                    selectedFilter === filter.toLowerCase()
-                      ? "#000000"
-                      : "#1a1a1a",
-                  color:
-                    selectedFilter === filter.toLowerCase()
-                      ? "#ffffff"
-                      : "#999999",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  transition: "all 0.2s",
-                }}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
         </div>
         <div
           style={{
@@ -2781,34 +3000,14 @@ export default function Dashboard() {
                     />
                   ))}
                 </div>
-                <div
+                <span
                   style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "center",
+                    fontSize: "0.75rem",
+                    color: "var(--color-text-muted)",
                   }}
                 >
-                  <span
-                    style={{
-                      padding: "0.25rem 0.75rem",
-                      borderRadius: "999px",
-                      fontSize: "0.7rem",
-                      fontWeight: 600,
-                      background: `${getTagColor(review.tag)}20`,
-                      color: getTagColor(review.tag),
-                    }}
-                  >
-                    {review.tag}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "var(--color-text-muted)",
-                    }}
-                  >
-                    {review.version}
-                  </span>
-                </div>
+                  {review.version}
+                </span>
               </div>
               <p
                 style={{
@@ -2898,39 +3097,6 @@ export default function Dashboard() {
               Strategic actions to boost installs, retention, and user
               satisfaction
             </p>
-          </div>
-          <div
-            style={{
-              background: "#f5f5f5",
-              padding: "0.75rem 1.25rem",
-              borderRadius: "var(--radius-md)",
-              border: "1px solid #e5e5e5",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "0.75rem",
-                color: "var(--color-text-muted)",
-                marginBottom: "0.25rem",
-              }}
-            >
-              Potential Impact
-            </div>
-            <div
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: 700,
-                color: "#2d2d2d",
-              }}
-            >
-              +40%
-            </div>
-            <div
-              style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}
-            >
-              installs & retention
-            </div>
           </div>
         </div>
 
@@ -3153,6 +3319,7 @@ export default function Dashboard() {
 
                 {/* Expected Outcome */}
                 <div
+                  onClick={() => alert("🚀 Coming Soon!\n\nDetailed outcome analysis and impact metrics will be available soon.")}
                   style={{
                     minWidth: "200px",
                     padding: "var(--space-md)",
@@ -3160,6 +3327,16 @@ export default function Dashboard() {
                     borderRadius: "var(--radius-md)",
                     border: "1px solid #333333",
                     textAlign: "center",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#252525";
+                    e.currentTarget.style.borderColor = "#666666";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#1a1a1a";
+                    e.currentTarget.style.borderColor = "#333333";
                   }}
                 >
                   <div
@@ -3233,6 +3410,7 @@ export default function Dashboard() {
             }}
           >
             <button
+              onClick={() => alert("🚀 Coming Soon!\n\nGenerate Action Plan feature is under development and will be available soon.")}
               style={{
                 padding: "0.75rem 2rem",
                 background: "linear-gradient(135deg, #e5e5e5, #bfbfbf)",
@@ -3259,38 +3437,7 @@ export default function Dashboard() {
               Generate Action Plan
             </button>
             <button
-              onClick={handleTriggerAnalysis}
-              disabled={isAnalyzing}
-              style={{
-                padding: "0.75rem 2rem",
-                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "var(--radius-md)",
-                fontSize: "1rem",
-                fontWeight: 600,
-                cursor: isAnalyzing ? "not-allowed" : "pointer",
-                transition: "all 0.2s",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                opacity: isAnalyzing ? 0.8 : 1,
-              }}
-            >
-              {isAnalyzing ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Zap size={18} fill="currentColor" />
-                  Generate AI Insights
-                </>
-              )}
-            </button>
-            <button
+              onClick={generatePDFReport}
               style={{
                 padding: "0.75rem 2rem",
                 background: "#000000",

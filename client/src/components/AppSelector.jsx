@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { authenticatedFetch } from '../lib/authHelper';
 import { ChevronDown, Loader2 } from 'lucide-react';
 
@@ -11,6 +11,7 @@ export default function AppSelector() {
     const [searchParams] = useSearchParams();
     const currentAppId = searchParams.get('appId');
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -19,6 +20,14 @@ export default function AppSelector() {
                 if (res.ok) {
                     const data = await res.json();
                     setApps(data);
+                    
+                    // Auto-select the first app if no appId is in URL
+                    // Stay on the current page (dashboard, reviews, etc.)
+                    if (data.length > 0 && !currentAppId) {
+                        console.log("📱 Auto-selecting app:", data[0].appId);
+                        const currentPath = location.pathname;
+                        navigate(`${currentPath}?appId=${data[0].appId}`, { replace: true });
+                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch apps", error);
@@ -27,12 +36,14 @@ export default function AppSelector() {
             }
         };
         fetchApps();
-    }, []);
+    }, [currentAppId, navigate, location.pathname]);
 
     const handleSelect = (appId) => {
         setIsOpen(false);
         if (appId !== currentAppId) {
-            navigate(`/dashboard?appId=${appId}`);
+            // Maintain the current page, only update the appId parameter
+            const currentPath = location.pathname;
+            navigate(`${currentPath}?appId=${appId}`);
         }
     };
 
@@ -41,10 +52,10 @@ export default function AppSelector() {
     if (loading) return <div className="w-32 h-8 bg-zinc-800 animate-pulse rounded" />;
 
     return (
-        <div className="relative">
+        <div className="relative z-[100]">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-colors z-[100]"
             >
                 {currentApp ? (
                     <>
@@ -58,7 +69,7 @@ export default function AppSelector() {
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl z-50 overflow-hidden">
+                <div className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl z-[100] overflow-hidden">
                     <div className="max-h-64 overflow-y-auto py-1">
                         {apps.map(app => (
                             <button

@@ -282,8 +282,54 @@ function LoginPage() {
     setIsLoading(true);
 
     try {
-      await loginWithEmail(email, password);
-      navigate("/analyze");
+      const result = await loginWithEmail(email, password);
+      const currentUser = result.user;
+
+      // Check if user exists in Firestore and onboarding status
+      const { getDoc } = await import("firebase/firestore");
+      const { doc } = await import("firebase/firestore");
+      const { db } = await import("../../lib/firebase");
+      
+      const userRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        console.log("👤 Email login - existing user");
+        console.log("📊 User data:", userData);
+        
+        // Check if user has analyzed apps (backup check for onboarding completion)
+        let hasCompletedOnboarding = userData.onboardingCompleted === true;
+        
+        if (!hasCompletedOnboarding) {
+          // Double-check: if user has apps, they've completed onboarding
+          const { collection, getDocs } = await import("firebase/firestore");
+          const appsRef = collection(db, "users", currentUser.uid, "apps");
+          const appsSnap = await getDocs(appsRef);
+          
+          if (!appsSnap.empty) {
+            console.log("📱 User has apps, marking onboarding as complete");
+            hasCompletedOnboarding = true;
+            
+            // Update Firestore to fix the flag
+            const { setDoc } = await import("firebase/firestore");
+            const userRef = doc(db, "users", currentUser.uid);
+            await setDoc(userRef, { onboardingCompleted: true }, { merge: true });
+          }
+        }
+        
+        if (hasCompletedOnboarding) {
+          console.log("✅ Onboarding completed, navigating to dashboard");
+          navigate("/dashboard");
+        } else {
+          console.log("⚠️ Onboarding incomplete, navigating to onboarding");
+          navigate("/onboarding");
+        }
+      } else {
+        // User exists in Auth but not in Firestore (edge case)
+        console.log("User not in Firestore, navigating to onboarding");
+        navigate("/onboarding");
+      }
     } catch (error) {
       console.error("Login error:", error);
       if (error.code === "auth/user-not-found") {
@@ -303,12 +349,78 @@ function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    setError("");
+    setIsLoading(true);
     try {
-      await loginWithGoogle();
-      navigate("/analyze");
+      const result = await loginWithGoogle();
+      const currentUser = result.user;
+
+      // Check if user exists in Firestore
+      const { getDoc } = await import("firebase/firestore");
+      const { doc } = await import("firebase/firestore");
+      const { db } = await import("../../lib/firebase");
+      
+      const userRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // NEW USER - Create account and go to onboarding
+        console.log("🆕 New user detected - creating account");
+
+        const { setDoc } = await import("firebase/firestore");
+        await setDoc(userRef, {
+          uid: currentUser.uid,
+          name: currentUser.displayName,
+          email: currentUser.email,
+          photoURL: currentUser.photoURL,
+          role: "Analyst",
+          organization: "Insightify Corp",
+          createdAt: new Date(),
+          onboardingCompleted: false,
+        });
+
+        console.log("✅ New user account created, navigating to onboarding");
+        navigate("/onboarding");
+      } else {
+        // EXISTING USER - Check onboarding status
+        const userData = userSnap.data();
+        console.log("👤 Existing user detected");
+        console.log("📊 User data:", userData);
+        console.log("✅ onboardingCompleted:", userData.onboardingCompleted);
+        console.log("📅 onboardingCompletedAt:", userData.onboardingCompletedAt);
+        
+        // Check if user has analyzed apps (backup check for onboarding completion)
+        let hasCompletedOnboarding = userData.onboardingCompleted === true;
+        
+        if (!hasCompletedOnboarding) {
+          // Double-check: if user has apps, they've completed onboarding
+          const { collection, getDocs } = await import("firebase/firestore");
+          const appsRef = collection(db, "users", currentUser.uid, "apps");
+          const appsSnap = await getDocs(appsRef);
+          
+          if (!appsSnap.empty) {
+            console.log("📱 User has apps, marking onboarding as complete");
+            hasCompletedOnboarding = true;
+            
+            // Update Firestore to fix the flag
+            const { setDoc } = await import("firebase/firestore");
+            await setDoc(userRef, { onboardingCompleted: true }, { merge: true });
+          }
+        }
+        
+        if (hasCompletedOnboarding) {
+          console.log("✅ Onboarding completed, navigating to dashboard");
+          navigate("/dashboard");
+        } else {
+          console.log("⚠️ Onboarding incomplete, navigating to onboarding");
+          navigate("/onboarding");
+        }
+      }
     } catch (error) {
       console.error("Google login error:", error);
       setError("Failed to log in with Google. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -756,9 +868,10 @@ function LoginPage() {
               className="w-full h-12 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-white"
               type="button"
               onClick={handleGoogleLogin}
+              disabled={isLoading}
             >
               <Mail className="mr-2 size-5" />
-              Log in with Google
+              {isLoading ? "Connecting..." : "Continue with Google"}
             </Button>
           </div>
 
